@@ -11,7 +11,7 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/chat': {
-        target: 'http://openapi.tuling123.com/openapi/api/v2',
+        target: 'http://openapi.tuling123.com',
         changeOrigin: true,
         pathRewrite: {
           '^/chat': ''

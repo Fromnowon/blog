@@ -1,7 +1,7 @@
 <template>
     <div class="footer">
         <div class="content">
-            <span>个人博客，开发中。邮箱：zihangzhao@gmail.com</span>
+            <span>个人博客，开发中</span>
         </div>
     </div>
 </template>

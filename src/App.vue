@@ -57,27 +57,27 @@ export default {
         z-index: 999;
     }
 
-    ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-    }
+    /*::-webkit-scrollbar {*/
+        /*width: 6px;*/
+        /*height: 6px;*/
+    /*}*/
 
-    ::-webkit-scrollbar-track {
-        background: #f6f6f6;
-        border-radius: 3px;
-    }
+    /*::-webkit-scrollbar-track {*/
+        /*background: #f6f6f6;*/
+        /*border-radius: 3px;*/
+    /*}*/
 
-    ::-webkit-scrollbar-thumb {
-        background: #aaa;
-        border-radius: 3px;
-    }
+    /*::-webkit-scrollbar-thumb {*/
+        /*background: #aaa;*/
+        /*border-radius: 3px;*/
+    /*}*/
 
-    ::-webkit-scrollbar-thumb:hover {
-        background: #747474;
-    }
+    /*::-webkit-scrollbar-thumb:hover {*/
+        /*background: #747474;*/
+    /*}*/
 
-    ::-webkit-scrollbar-corner {
-        background: #f6f6f6;
-    }
+    /*::-webkit-scrollbar-corner {*/
+        /*background: #f6f6f6;*/
+    /*}*/
 
 </style>

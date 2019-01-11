@@ -1,44 +1,64 @@
 <template>
     <div class="topic_content">
-        <div style="padding: 0 30px;position: relative;z-index: 10;background: whitesmoke;">
-            <div class="back_to_index">
-                <el-button icon="el-icon-back" size="medium" circle @click="go_back"></el-button>
-            </div>
-            <div class="title">
-                <h2>{{ topic.title }}</h2>
-            </div>
-            <div class="tags">
-                <el-tag v-for="(tag,index) in topic.tags" :type="tag_style_arr[index]" style="margin-right: 10px"
-                        size="small" :key="index">{{ tag }}
-                </el-tag>
-            </div>
-            <br>
-            <div class="info">
-                <span>作者：</span><span>{{ topic.author }}</span>
-            </div>
-            <br>
-            <div class="ql-container ql-snow" style="border: 0">
-                <div class="ql-editor content" v-html="topic.content">
+        <div class="inner_content">
+            <el-card class="box-card" style="position: relative;margin-bottom: 20px;padding: 0 10px">
+                <div slot="header" class="clearfix">
+                    <el-button icon="el-icon-back" size="small" style="float: right" @click="go_back">返回</el-button>
+                    <div style="font-size: 24px;font-weight: bold;margin-bottom: 20px">{{ topic.title }}</div>
+                    <div class="tags">
+                        <el-tag v-for="(tag,index) in topic.tags" :type="tag_style_arr[index]"
+                                style="margin-right: 10px"
+                                size="small" :key="index">{{ tag }}
+                        </el-tag>
+                    </div>
+                    <div class="info">
+                        <span style="margin-right: 20px">作者：{{ topic.author }}</span>
+                        <span>阅读量： {{ topic.view }}</span>
+                    </div>
                 </div>
-            </div>
-            <hr>
-            <h3>
-                回复：
-            </h3>
-            <div class="quill-editor">
-                <quill-editor
-                        v-model="content"
-                        ref="myQuillEditor"
-                        :options="editorOption"
-                        @blur="onEditorBlur($event)" @focus="onEditorFocus($event)"
-                        @change="onEditorChange($event)">
-                </quill-editor>
-            </div>
-            <div style="text-align: right;padding: 20px 0">
-                <el-button @click="post">提交</el-button>
-            </div>
+                <div class="text item">
+                    <div class="ql-container ql-snow" style="border: 0">
+                        <div class="ql-editor content" v-html="topic.content">
+                        </div>
+                    </div>
+                </div>
+            </el-card>
+            <el-card class="box-card" style="position: relative;padding: 0 10px">
+                <div slot="header" class="clearfix">
+                    <span style="font-size: 16px;font-weight: bold">回复</span>
+                </div>
+
+                <div class="reply">
+                    暂无回复
+                </div>
+
+                <div class="text item" style="margin-top: 20px">
+                    <div class="userinfo">
+                        <el-form ref="form" :rules="rules" :model="form" label-width="80px" label-position="top">
+                            <el-form-item label="名字：" prop="name">
+                                <el-input v-model="form.name" style="max-width: 200px"></el-input>
+                            </el-form-item>
+                            <el-form-item label="邮箱：" prop="email">
+                                <el-input v-model="form.email" style="max-width: 200px"></el-input>
+                            </el-form-item>
+                        </el-form>
+                    </div>
+                    <br>
+                    <div class="quill-editor">
+                        <quill-editor
+                                v-model="content"
+                                ref="myQuillEditor"
+                                :options="editorOption"
+                                @blur="onEditorBlur($event)" @focus="onEditorFocus($event)"
+                                @change="onEditorChange($event)">
+                        </quill-editor>
+                    </div>
+                    <div style="text-align: right;padding: 20px 0">
+                        <el-button type="primary" style="min-width: 120px" @click="post('form')">提交</el-button>
+                    </div>
+                </div>
+            </el-card>
         </div>
-        <canvas v-show="lessThan1000" id="Mycanvas"></canvas>
     </div>
 </template>
 
@@ -55,7 +75,21 @@ export default {
   name: "view-topic",
   data() {
     return {
-      lessThan1000: false,//是否渲染背景
+      form: {
+        name: '',
+        email: '',
+      },
+      rules: {
+        name: [
+          {required: true, message: '请输入昵称', trigger: 'blur'},
+          {min: 3, max: 8, message: '长度在 3 到 5 个字符', trigger: 'blur'}
+        ],
+        email: [
+          {required: true, message: '请输入邮箱地址', trigger: 'blur'},
+          {type: 'email', message: '请输入正确的邮箱地址', trigger: ['blur', 'change']}
+        ],
+
+      },
       tag_style_arr: ['', 'success', 'info', 'warning', 'danger'],
       topic: null,
       content: ``,//编辑器内容，html格式
@@ -94,116 +128,21 @@ export default {
     }
   },
   methods: {
-    init_bg() {
-      //定义画布宽高和生成点的个数
-      var WIDTH = window.innerWidth, HEIGHT = window.innerHeight, POINT = 25;
-
-      var canvas = document.getElementById('Mycanvas');
-      canvas.width = WIDTH,
-        canvas.height = HEIGHT;
-      var context = canvas.getContext('2d');
-      context.strokeStyle = 'rgba(0,0,0,0.02)',
-        context.strokeWidth = 1,
-        context.fillStyle = 'rgba(0,0,0,0.05)';
-      var circleArr = [];
-
-      //线条：开始xy坐标，结束xy坐标，线条透明度
-      function Line(x, y, _x, _y, o) {
-        this.beginX = x,
-          this.beginY = y,
-          this.closeX = _x,
-          this.closeY = _y,
-          this.o = o;
-      }
-
-      //点：圆心xy坐标，半径，每帧移动xy的距离
-      function Circle(x, y, r, moveX, moveY) {
-        this.x = x,
-          this.y = y,
-          this.r = r,
-          this.moveX = moveX,
-          this.moveY = moveY;
-      }
-
-      //生成max和min之间的随机数
-      function num(max, _min) {
-        var min = arguments[1] || 0;
-        return Math.floor(Math.random() * (max - min + 1) + min);
-      }
-
-      // 绘制原点
-      function drawCricle(cxt, x, y, r, moveX, moveY) {
-        var circle = new Circle(x, y, r, moveX, moveY)
-        cxt.beginPath()
-        cxt.arc(circle.x, circle.y, circle.r, 0, 2 * Math.PI)
-        cxt.closePath()
-        cxt.fill();
-        return circle;
-      }
-
-      //绘制线条
-      function drawLine(cxt, x, y, _x, _y, o) {
-        var line = new Line(x, y, _x, _y, o)
-        cxt.beginPath()
-        cxt.strokeStyle = 'rgba(0,0,0,' + o + ')'
-        cxt.moveTo(line.beginX, line.beginY)
-        cxt.lineTo(line.closeX, line.closeY)
-        cxt.closePath()
-        cxt.stroke();
-
-      }
-
-      //初始化生成原点
-      function init() {
-        circleArr = [];
-        for (var i = 0; i < POINT; i++) {
-          circleArr.push(drawCricle(context, num(WIDTH), num(HEIGHT), num(15, 2), num(10, -10) / 40, num(10, -10) / 40));
+    post(form) {
+      // this.$notify.error({
+      //   title: '错误',
+      //   message: '暂时无法使用'
+      // });
+      this.$refs[form].validate((valid) => {
+        if (valid) {
+          this.$notify.error({
+            title: '抱歉',
+            message: '功能未完成'
+          });
+        } else {
+          console.log('error submit!!');
+          return false;
         }
-        draw();
-      }
-
-      //每帧绘制
-      function draw() {
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        for (var i = 0; i < POINT; i++) {
-          drawCricle(context, circleArr[i].x, circleArr[i].y, circleArr[i].r);
-        }
-        for (var i = 0; i < POINT; i++) {
-          for (var j = 0; j < POINT; j++) {
-            if (i + j < POINT) {
-              var A = Math.abs(circleArr[i + j].x - circleArr[i].x),
-                B = Math.abs(circleArr[i + j].y - circleArr[i].y);
-              var lineLength = Math.sqrt(A * A + B * B);
-              var C = 1 / lineLength * 7 - 0.009;
-              var lineOpacity = C > 0.03 ? 0.03 : C;
-              if (lineOpacity > 0) {
-                drawLine(context, circleArr[i].x, circleArr[i].y, circleArr[i + j].x, circleArr[i + j].y, lineOpacity);
-              }
-            }
-          }
-        }
-      }
-
-      //调用执行
-      init();
-      setInterval(function () {
-        for (var i = 0; i < POINT; i++) {
-          var cir = circleArr[i];
-          cir.x += cir.moveX;
-          cir.y += cir.moveY;
-          if (cir.x > WIDTH) cir.x = 0;
-          else if (cir.x < 0) cir.x = WIDTH;
-          if (cir.y > HEIGHT) cir.y = 0;
-          else if (cir.y < 0) cir.y = HEIGHT;
-
-        }
-        draw();
-      }, 16);
-    },
-    post() {
-      this.$notify.error({
-        title: '错误',
-        message: '暂时无法使用'
       });
     },
     go_back() {
@@ -234,14 +173,11 @@ export default {
   mounted() {
     let vm = this;
     vm.editor.container.style.height = '200px';
-    if (vm.lessThan1000 = window.innerWidth >= 1000) {
-      vm.init_bg();
-    }
   },
   computed: {
     editor() {
       return this.$refs.myQuillEditor.quill;
-    }
+    },
   },
   components: {
     quillEditor
@@ -251,6 +187,11 @@ export default {
 
 <style scoped>
     .topic_content {
+        background: #f5f6f7;
+    }
+
+    .inner_content {
+        padding: 20px 0;
         max-width: 1000px;
         margin: 0 auto;
     }
@@ -260,25 +201,31 @@ export default {
     }
 
     .info {
-        font-size: 15px;
-        color: #909399;
+        font-size: 14px;
+        color: #b1b4bb;
+        margin-bottom: 20px;
+    }
+
+    .tags {
+        margin-bottom: 20px;
     }
 
     .content {
         background: transparent !important;
+        padding: 0 !important;
     }
 
     .content >>> img {
         max-width: 100%;
     }
 
-    #Mycanvas {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        margin: auto;
-        z-index: 1;
+    .ql-container {
+        padding: 30px 0;
     }
+
+    .reply {
+        padding: 10px 0 30px 0;
+        border-bottom: 1px solid #ebeef5;
+    }
+
 </style>

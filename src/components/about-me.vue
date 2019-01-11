@@ -1,12 +1,13 @@
 <template>
     <div class="about_me">
         <div>
-            <img v-for="src in qcode" :src="src" alt="qcode">
+            <img style="display: none" v-for="src in qcode" :src="src" alt="qcode">
         </div>
         <div style="margin: 20px 0">
             喜欢前端、php、python、C++等编程语言但都不熟练的伪程序猿
             <br><br>
-            <iframe src="https://ghbtns.com/github-btn.html?user=Fromnowon&type=follow&count=true&size=large" frameborder="0"
+            <iframe src="https://ghbtns.com/github-btn.html?user=Fromnowon&type=follow&count=true&size=large"
+                    frameborder="0"
                     scrolling="0" width="220px" height="30px"></iframe>
         </div>
     </div>

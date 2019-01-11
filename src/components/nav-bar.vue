@@ -49,7 +49,6 @@ export default {
 <style scoped>
     .nav_bar {
         user-select: none;
-        box-shadow: 0 2px 5px #7a7a7a;
     }
 
     .el-menu {

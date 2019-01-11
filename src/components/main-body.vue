@@ -42,7 +42,6 @@ export default {
   name: "main_body",
   data() {
     return {
-      main_content_width: 1000,
       test: [1, 2, 3, 4, 5],
       controller: 1,
       bgImageUrl: ['./static/images/bg/bg-1.jpg', './static/images/bg/bg-2.jpg', './static/images/bg/bg-3.jpg'],
@@ -53,14 +52,18 @@ export default {
       if (from.path === '/admin') {
         this.$forceUpdate();
       }
+    },
+  },
+  computed: {
+    main_content_width() {
+      //获取body宽度，以决定是否显示壁纸
+      return this.$store.state.win_size.width;
     }
   },
   mounted() {
     let vm = this;
     //监听滚动事件
     document.addEventListener('scroll', this.handleScroll);
-    //获取body宽度，以决定是否显示壁纸
-    this.main_content_width = this.$util.getDomByTag('body')[0].clientWidth;
   },
   methods: {
     onSearch() {
