@@ -57,7 +57,11 @@ export default {
   computed: {
     main_content_width() {
       //获取body宽度，以决定是否显示壁纸
-      return this.$store.state.win_size.width;
+      try {
+        return this.$store.state.win_size.width;
+      } catch (e) {
+        return window.innerWidth;
+      }
     }
   },
   mounted() {

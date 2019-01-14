@@ -16,18 +16,22 @@ export default {
     return {}
   },
   created() {
+    let vm = this;
     //在页面加载时读取sessionStorage里的状态信息
     if (sessionStorage.getItem("store")) {
-      this.$store.replaceState(Object.assign({}, this.$store.state, JSON.parse(sessionStorage.getItem("store"))))
+      vm.$store.replaceState(Object.assign({}, vm.$store.state, JSON.parse(sessionStorage.getItem("store"))))
     }
 
     //在页面刷新时将vuex里的信息保存到sessionStorage里
     window.addEventListener("beforeunload", () => {
-      sessionStorage.setItem("store", JSON.stringify(this.$store.state))
+      sessionStorage.setItem("store", JSON.stringify(vm.$store.state))
     });
     //实时存储窗口尺寸
-    window.addEventListener('resize', () => {
-      this.$store.commit('setSize', {height: window.innerHeight, width: window.innerWidth});
+    ['load', 'resize'].forEach(function (item, index) {
+      window.addEventListener(item, () => {
+        vm.$store.commit('setSize', {height: window.innerHeight, width: window.innerWidth});
+
+      });
     });
   },
   watch: {
@@ -40,7 +44,9 @@ export default {
 </script>
 
 <style>
-
+    .el-card {
+        border-radius: 0 !important;
+    }
     .el-dialog {
         min-width: 300px;
     }
@@ -58,26 +64,26 @@ export default {
     }
 
     /*::-webkit-scrollbar {*/
-        /*width: 6px;*/
-        /*height: 6px;*/
+    /*width: 6px;*/
+    /*height: 6px;*/
     /*}*/
 
     /*::-webkit-scrollbar-track {*/
-        /*background: #f6f6f6;*/
-        /*border-radius: 3px;*/
+    /*background: #f6f6f6;*/
+    /*border-radius: 3px;*/
     /*}*/
 
     /*::-webkit-scrollbar-thumb {*/
-        /*background: #aaa;*/
-        /*border-radius: 3px;*/
+    /*background: #aaa;*/
+    /*border-radius: 3px;*/
     /*}*/
 
     /*::-webkit-scrollbar-thumb:hover {*/
-        /*background: #747474;*/
+    /*background: #747474;*/
     /*}*/
 
     /*::-webkit-scrollbar-corner {*/
-        /*background: #f6f6f6;*/
+    /*background: #f6f6f6;*/
     /*}*/
 
 </style>
