@@ -8,7 +8,7 @@
                  :unique-opened="true"
                  router>
             <el-menu-item index="/index">首页</el-menu-item>
-            <el-submenu index="2">
+            <el-submenu index="2" disabled>
                 <template slot="title">分类</template>
                 <el-menu-item index="2-1">编程</el-menu-item>
                 <el-menu-item index="2-2">杂谈</el-menu-item>
@@ -21,7 +21,7 @@
                 </el-submenu>
             </el-submenu>
             <el-menu-item index="/index/about">关于我</el-menu-item>
-            <el-menu-item index="/index/chat" style="color: dodgerblue;font-weight: bold">小玩意儿</el-menu-item>
+            <el-menu-item index="/index/chat">小玩意儿</el-menu-item>
         </el-menu>
     </div>
 </template>

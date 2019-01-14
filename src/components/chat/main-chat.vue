@@ -1,6 +1,7 @@
 <!--聊天内容区-->
 <template>
     <div class="mainChat">
+        <p style="font-size: 14px;margin-top: 0">接口来自：<a target="_blank" href="http://www.turingapi.com/">图灵机器人</a></p>
         <div class="main_content">
             <el-scrollbar>
                 <div class="ql-container ql-snow">
@@ -53,7 +54,7 @@ export default {
             ['code-block'],
           ]
         },
-        placeholder: '',
+        placeholder: '输入内容与机器人聊天',
       },
       msg_list: [],
     }
@@ -176,6 +177,7 @@ export default {
 <style scoped>
     .mainChat {
         padding: 10px;
+        margin-bottom: 50px;
     }
 
     .el-scrollbar {
@@ -201,6 +203,5 @@ export default {
     .btn {
         text-align: right;
         margin-top: 70px;
-
     }
 </style>

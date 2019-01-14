@@ -15,11 +15,11 @@ export default {
 <style scoped>
     .footer {
         background: #394149;
-        height: 200px;
+        height: 100px;
     }
 
     .content {
-        line-height: 200px;
+        line-height: 100px;
         text-align: center;
         font-size: 16px;
         color: white;

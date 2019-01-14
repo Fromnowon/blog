@@ -3,9 +3,14 @@
         <div>
             <img style="display: none" v-for="src in qcode" :src="src" alt="qcode">
         </div>
-        <div style="margin: 20px 0">
-            喜欢前端、php、python、C++等编程语言但都不熟练的伪程序猿
-            <br><br>
+        <div style="margin: 20px 0;font-size: 14px">
+            <div style="margin-bottom: 50px">
+                <p>本博客成分：</p>
+                <p>框架：<a target="_blank" href="https://vuejs.org/">Vue</a></p>
+                <p>UI库：<a target="_blank" href="https://element.eleme.io">Element</a></p>
+                <p>服务端：Nginx+PHP+MySQL</p>
+            </div>
+            <p>喜欢前端、php、python、C++等编程语言但都不熟练的伪程序猿</p>
             <iframe src="https://ghbtns.com/github-btn.html?user=Fromnowon&type=follow&count=true&size=large"
                     frameborder="0"
                     scrolling="0" width="220px" height="30px"></iframe>

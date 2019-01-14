@@ -1,17 +1,21 @@
 <template>
     <div class="topic_content">
         <div class="inner_content">
-            <el-card class="box-card" style="position: relative;margin-bottom: 20px;padding: 0 10px">
+            <el-card v-loading="loadingTopic" class="box-card" style="margin-bottom: 20px;padding: 20px 10px">
                 <div slot="header" class="clearfix">
-                    <el-button icon="el-icon-back" size="small" type="info" plain style="float: right;margin-top: 5px"
+                    <el-button icon="el-icon-arrow-left" size="small"
+                               style="float: right;margin-top: 5px;color: red"
                                @click="go_back">返回
                     </el-button>
                     <div style="font-size: 24px;font-weight: bold;margin-bottom: 20px">{{ topic.title }}</div>
-                    <div class="tags">
-                        <el-tag v-for="(tag,index) in topic.tags" :type="tag_style_arr[index]"
-                                style="margin-right: 10px"
-                                size="small" :key="index">{{ tag }}
-                        </el-tag>
+                    <div class="group_tag">
+                        <i class="fa fa-folder"></i>
+                        <span style="margin: 0 20px 0 5px">{{ group[topic.grouping] }}</span>
+                        <i class="fa fa-tags"></i>
+                        <span v-for="(tag,index) in topic.tags" :type="tag_style_arr[index]"
+                              style="margin-left: 5px"
+                              :key="index">{{ tag }}
+                        </span>
                     </div>
                     <div class="info">
                         <span style="margin-right: 20px">作者：{{ topic.author }}</span>
@@ -27,13 +31,13 @@
             </el-card>
             <el-card class="box-card" style="position: relative;padding: 0 10px">
                 <div slot="header" class="clearfix">
-                    <span style="font-size: 16px;font-weight: bold">评论</span>
+                    <span style="font-size: 16px;">评论</span>
                 </div>
 
-                <div class="reply">
+                <div class="reply" v-loading="loadingComment">
                     <span v-if="comments.length===0">暂无</span>
                     <div v-else>
-                        <div v-for="(item,index) in commentsToShow" style="font-size: 14px">
+                        <div v-for="(item,index) in commentsToShow" style="font-size: 14px;margin-bottom: 20px;">
                             <div>
                                 <span style="margin-right: 20px;font-weight: bold">{{ item.name }}</span>
                                 <span style="color: darkgray">{{ commentsTotal-index-(commentsPageNUM-1)*perNUM }}楼</span>
@@ -112,6 +116,9 @@ export default {
       commentsPageNUM: 1,//默认第一页
       uuid: '',//唯一标识符
       validateStatus: false,//验证状态
+      loadingComment: true,//加载中
+      loadingTopic: true,
+      group: {0: '默认', 1: '开发', 2: '分享', 3: '随笔', 4: '其他'},
       form: {
         name: '',
         email: '',
@@ -128,7 +135,7 @@ export default {
 
       },
       tag_style_arr: ['', 'success', 'info', 'warning', 'danger'],
-      topic: null,
+      topic: '',
       content: ``,//编辑器内容，html格式
       content_text: ``,//编辑器内容，html格式
       editorOption: {
@@ -221,10 +228,6 @@ export default {
       }
     },
     post(form) {
-      // this.$notify.error({
-      //   title: '错误',
-      //   message: '暂时无法使用'
-      // });
       this.$refs[form].validate((valid) => {
         if (valid) {
           if (!this.content_text.match(/^\s*$/)) {
@@ -275,44 +278,53 @@ export default {
     go_back() {
       this.$router.go(-1);
     },
-    onEditorReady(editor) { // 准备编辑器
-
-    },
-    onEditorBlur() {
-    }, // 失去焦点事件
-    onEditorFocus() {
-    }, // 获得焦点事件
     onEditorChange({quill, html, text}) {
       this.content_text = text;
-      //console.log(this.content);
     }, // 内容改变事件
   },
   created() {
     //生成随机串
-    this.uuid = randomWord(false, 16);
+    // this.uuid = randomWord(false, 16);
     //若使用mounted，控制台会报错，因为data已经被使用，但值为null
     //读取数据
-    this.topic = this.$store.state.topic;
-    try {
-      this.topic.tags = JSON.parse(this.topic.tags);
-    } catch (e) {
-      //从本地存储读出来的已经是json格式;
-    }
-    //拉取评论
-    this.$axios.post(this.API + '/backend.php?action=pullComments', Qs.stringify({id: this.$store.state.topic.id}))
+    let id = this.$route.query.id;
+    //拉取文章数据
+    this.$axios.post(this.API + '/backend.php?action=get_topic_detail', Qs.stringify({id: id}))
       .then(data => {
-        if (data.data.msg !== null) {
-          console.log(data);
+        data.data.msg.tags = JSON.parse(data.data.msg.tags);
+        if (data.data.status !== -1) {
+          this.topic = data.data.msg;
+        } else {
+          console.log(data.data.msg);
+        }
+        this.$nextTick(function () {
+          /*DOM更新了*/
+          this.loadingTopic = false;
+        })
+      })
+      .catch(error => {
+        console.log(error);
+      });
+    //拉取评论
+    this.$axios.post(this.API + '/backend.php?action=pullComments', Qs.stringify({id: id}))
+      .then(data => {
+        if (data.data.status !== -1) {
           this.commentsTotal = data.data.msg.length;
           this.comments = data.data.msg;
           for (let i = 0; i < this.perNUM && i < this.commentsTotal; i++) {
             this.commentsToShow.push(this.comments[i]);
           }
+          this.$nextTick(function () {
+            /*DOM更新了*/
+            this.loadingComment = false;
+          })
+        } else {
+          console.log(data.data.msg);
         }
       })
       .catch(error => {
         console.log(error);
-      })
+      });
   },
   mounted() {
     let vm = this;
@@ -351,27 +363,28 @@ function randomWord(randomFlag, min, max) {
 
 <style scoped>
 
-    .topic_content {
-        background: #f5f6f7;
-    }
-
     .inner_content {
+        padding: 20px 0;
         max-width: 1000px;
         margin: 0 auto;
     }
 
-    .back_to_index {
-        padding-top: 10px;
+    .box-card {
+        position: relative;
+        padding: 0 10px;
+        min-height: 200px
     }
 
     .info {
+        color: #818181;
         font-size: 14px;
-        color: #b1b4bb;
-        margin-bottom: 20px;
+        margin-bottom: 10px;
     }
 
-    .tags {
-        margin-bottom: 20px;
+    .group_tag {
+        color: #818181;
+        font-size: 14px;
+        margin-bottom: 10px;
     }
 
     .content {
@@ -384,7 +397,7 @@ function randomWord(randomFlag, min, max) {
     }
 
     .ql-container {
-        padding: 30px 0;
+        padding: 10px 0;
     }
 
     .el-form-item {
@@ -398,6 +411,7 @@ function randomWord(randomFlag, min, max) {
     .reply {
         padding: 10px 0 20px 0;
         border-bottom: 1px solid #ebeef5;
+        min-height: 200px;
     }
 
     /* 滑动条高度、边框、背景色等 */

@@ -1,8 +1,5 @@
 <template>
     <div class="main_content">
-        <div v-if="main_content_width>=1000" class="bg">
-            <img v-for="src in bgImageUrl" ondragstart="return false" :src="src" alt="">
-        </div>
         <div class="bg_content">
             <blogHeader></blogHeader>
             <div class="body_content">
@@ -16,10 +13,36 @@
                             <div>
                                 <div class="nav_search">
                                     <el-input suffix-icon="el-icon-search" placeholder="搜索"
-                                              @keydown.enter.native="onSearch"></el-input>
+                                              @keydown.enter.native="onSearch"
+                                              :disabled="true"></el-input>
                                 </div>
-                                <div>
-                                    <p style="color: lightgrey">这里放点啥呢</p>
+                                <div class="myTopic">
+                                    <el-carousel height="160px" :interval="5000">
+                                        <el-carousel-item v-for="(item,index) in topicIMG" :key="index">
+                                            <div style="position: absolute;line-height: 12px;background: rgba(255,255,255,0.51);width: 100%;padding: 10px">
+                                                <span style="font-size: 12px;font-weight: bold">这是第{{ index+1 }}张图</span>
+                                            </div>
+                                            <img style="width: 100%" :src="item" alt="pic">
+                                        </el-carousel-item>
+                                    </el-carousel>
+                                </div>
+                                <div class="hottest">
+                                    <p style="font-weight: bold">最受欢迎文章：</p>
+                                    <router-link :key="index" style="margin-top: 10px" :to="'/view?id='+item.id"
+                                                 v-for="(item,index) in hottest">{{item.title }}
+                                    </router-link>
+                                </div>
+                                <div class="newest">
+                                    <p style="font-weight: bold">最新评论：</p>
+                                    <div v-for="(item,index) in newest" :key="index">
+                                        <p style="font-size: 14px">{{ item.content }}</p>
+
+                                        <div style="font-size: 12px;color: grey;text-align: right">
+                                            <span>{{ item.name }}</span>
+                                            发表于
+                                            <router-link :to="'/view?id='+item.topicID">《{{ item.title }}》</router-link>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </el-card>
@@ -44,7 +67,10 @@ export default {
     return {
       test: [1, 2, 3, 4, 5],
       controller: 1,
-      bgImageUrl: ['./static/images/bg/bg-1.jpg', './static/images/bg/bg-2.jpg', './static/images/bg/bg-3.jpg'],
+      topicIMG: ['./static/images/topic/1.jpg', './static/images/topic/2.jpg', './static/images/topic/3.jpg'],
+      hottest: [],//点击最多
+      newest: [],//最新评论
+      commentPreviewLength: 30,//评论预览长度
     }
   },
   watch: {
@@ -54,20 +80,37 @@ export default {
       }
     },
   },
-  computed: {
-    main_content_width() {
-      //获取body宽度，以决定是否显示壁纸
-      try {
-        return this.$store.state.win_size.width;
-      } catch (e) {
-        return window.innerWidth;
-      }
-    }
-  },
   mounted() {
-    let vm = this;
-    //监听滚动事件
-    document.addEventListener('scroll', this.handleScroll);
+    //点击最多
+    this.$axios.post(this.API + '/backend.php?action=pullHottest')
+      .then(data => {
+        if (data.data.status !== -1) {
+          this.hottest = data.data.msg;
+        } else {
+          console.log(data.data.msg);
+        }
+      })
+      .catch(error => {
+        console.log(error);
+      });
+    //最新评论
+    this.$axios.post(this.API + '/backend.php?action=pullNewsComments')
+      .then(data => {
+        if (data.data.status !== -1) {
+          for (let i = 0, len = data.data.msg.length; i < len; i++) {
+            data.data.msg[i].content = this.$util.HTMLEncode(data.data.msg[i].content);
+            if (data.data.msg[i].content.length > this.commentPreviewLength) {
+              data.data.msg[i].content = data.data.msg[i].content.substr(0, this.commentPreviewLength) + '...';
+            }
+          }
+          this.newest = data.data.msg;
+        } else {
+          console.log(data.data.msg);
+        }
+      })
+      .catch(error => {
+        console.log(error);
+      })
   },
   methods: {
     onSearch() {
@@ -76,37 +119,6 @@ export default {
         message: '此功能施工中'
       });
     },
-    handleScroll() {
-      //由于事件绑定在文档之上，所以需要判断当前路由
-      let vm = this;
-      if (vm.$route.matched[0].path !== '/index' || this.main_content_width < 1000) {
-        //若不在index路由下直接返回
-        return;
-      }
-      if (vm.controller) {
-        vm.controller = 0;
-        setTimeout(function () {
-          try {
-            if (vm.$util.isScrollOver('header')) {
-              vm.$util.getDomByClass('bg')[0].style.top = '-' + vm.$util.getDomByClass('bg')[0].children[1].height + 'px';
-              if (vm.$util.isVisible('footer')) {
-                //看见footer了
-                vm.$util.getDomByClass('bg')[0].style.top = '-' + vm.$util.getDomByClass('bg')[0].children[2].offsetTop + 'px';
-              } else {
-                vm.$util.getDomByClass('bg')[0].style.top = '-' + vm.$util.getDomByClass('bg')[0].children[1].height + 'px';
-              }
-            }
-            else {
-              vm.$util.getDomByClass('bg')[0].style.top = 0;
-            }
-          }
-          catch (e) {
-            console.log(e);
-          }
-          vm.controller = 1;
-        }, 300);
-      }
-    }
   },
   components: {
     aboutMe,
@@ -115,12 +127,20 @@ export default {
   },
   beforeDestroy() {
     //跳转前销毁监听
-    document.removeEventListener('scroll', this.handleScroll, false);
   }
 }
 </script>
 
 <style scoped>
+    .right_card a {
+        text-decoration: none;
+        color: #3a9bf5;
+    }
+
+    .right_card a:hover {
+        color: red;
+    }
+
     .bg {
         position: fixed;
         z-index: 1;
@@ -151,16 +171,40 @@ export default {
     .main_content {
         max-width: 1000px;
         margin: 0 auto;
+        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
     }
 
     .body_content {
         padding: 20px;
-        background: whitesmoke;
         min-height: 600px;
+        border-left: 1px solid lightgrey;
+        border-right: 1px solid lightgrey;
     }
 
     .right_card {
         min-height: 200px;
+    }
+
+    .myTopic {
+        margin: 30px 0;
+    }
+
+    .hottest {
+        margin: 40px 0;
+    }
+
+    .newest {
+        margin: 40px 0;
+    }
+
+    .hottest a {
+        font-size: 14px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        word-break: break-all; /* 追加这一行代码 */
     }
 
 

@@ -44,9 +44,14 @@ export default {
 </script>
 
 <style>
+    #app {
+        background: #f5f6f7;
+    }
+
     .el-card {
         border-radius: 0 !important;
     }
+
     .el-dialog {
         min-width: 300px;
     }
