@@ -8,7 +8,7 @@
                  :unique-opened="true"
                  router>
             <el-menu-item index="/index">首页</el-menu-item>
-            <el-submenu index="2" disabled>
+            <el-submenu index="2">
                 <template slot="title">分类</template>
                 <el-menu-item index="2-1">编程</el-menu-item>
                 <el-menu-item index="2-2">杂谈</el-menu-item>

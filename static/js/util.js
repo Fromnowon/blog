@@ -58,7 +58,7 @@ util.removeClass = function (ele, cls) {
   }
 };
 util.HTMLEncode = function (html) {
-  const WIDTH = 60;
+  const WIDTH = 125;
   let temp = document.createElement("div");
   temp.innerHTML = html;
   let output = temp.innerText || temp.textContent;

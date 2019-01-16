@@ -1,7 +1,7 @@
 <template>
     <div class="footer">
         <div class="content">
-            <span>个人博客，开发中</span>
+            <p>个人博客，各项功能开发中</p>
         </div>
     </div>
 </template>

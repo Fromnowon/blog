@@ -1,13 +1,15 @@
 <template>
-    <div class="topic_content">
+    <div class="topic_content" style="background: white">
         <div class="inner_content">
-            <el-card v-loading="loadingTopic" class="box-card" style="margin-bottom: 20px;padding: 20px 10px">
-                <div slot="header" class="clearfix">
-                    <el-button icon="el-icon-arrow-left" size="small"
-                               style="float: right;margin-top: 5px;color: red"
-                               @click="go_back">返回
-                    </el-button>
-                    <div style="font-size: 24px;font-weight: bold;margin-bottom: 20px">{{ topic.title }}</div>
+            <div class="inner_item" style="margin-bottom: 20px">
+                <a href="javascript:void(0)" @click="go_back"
+                   style="text-decoration: none;color: red;font-size: 14px"><i
+                        class="fa fa-angle-left"></i> 返回</a>
+            </div>
+            <div v-loading="loadingTopic" class="inner_item"
+                 style="margin-bottom: 40px;">
+                <div>
+                    <div style="font-size: 24px;font-weight: bold;margin-bottom: 20px;">{{ topic.title }}</div>
                     <div class="group_tag">
                         <i class="fa fa-folder"></i>
                         <span style="margin: 0 20px 0 5px">{{ group[topic.grouping] }}</span>
@@ -22,75 +24,79 @@
                         <span>阅读量： {{ topic.view }}</span>
                     </div>
                 </div>
-                <div class="text item">
+                <div class="text item" style="margin: 30px 0 0">
                     <div class="ql-container ql-snow" style="border: 0">
                         <div class="ql-editor content" v-html="topic.content">
                         </div>
                     </div>
                 </div>
-            </el-card>
-            <el-card class="box-card" style="position: relative;padding: 0 10px">
-                <div slot="header" class="clearfix">
-                    <span style="font-size: 16px;">评论</span>
-                </div>
+            </div>
+            <divider></divider>
+            <div style="position: relative;padding: 40px 10px">
+                <div class="inner_item">
+                    <div>
+                        <span style="font-size: 18px">评论：</span>
+                    </div>
 
-                <div class="reply" v-loading="loadingComment">
-                    <span v-if="comments.length===0">暂无</span>
-                    <div v-else>
-                        <div v-for="(item,index) in commentsToShow" style="font-size: 14px;margin-bottom: 20px;">
+                    <div class="reply" v-loading="loadingComment">
+                        <span v-if="comments.length===0">暂无</span>
+                        <div v-else>
+                            <div v-for="(item,index) in commentsToShow"
+                                 style="font-size: 14px;padding:20px;border-bottom: 1px solid whitesmoke">
+                                <div>
+                                    <span style="margin-right: 20px;font-weight: bold">{{ item.name }}</span>
+                                    <span style="color: darkgray">{{ commentsTotal-index-(commentsPageNUM-1)*perNUM }}楼</span>
+                                </div>
+                                <div v-html="item.content"></div>
+                                <div style="text-align: right;font-size: 12px;color: darkgray">发表于：{{ item.createDate }}
+                                </div>
+                            </div>
+                            <div style="text-align: center;margin-top: 20px">
+                                <el-pagination
+                                        @current-change="paginationHandler"
+                                        layout="prev, pager, next"
+                                        :page-size="perNUM"
+                                        :total="commentsTotal">
+                                </el-pagination>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text item" style="margin-top: 20px">
+                        <div class="userinfo">
+                            <el-form label-position="top" ref="form" :rules="rules" :model="form" label-width="80px">
+                                <el-form-item style="padding-bottom: 10px" label="名字：" prop="name">
+                                    <el-input size="small" v-model="form.name" style="max-width: 170px"></el-input>
+                                </el-form-item>
+                                <el-form-item style="padding-bottom: 10px" label="邮箱：" prop="email">
+                                    <el-input size="small" v-model="form.email" style="max-width: 170px"></el-input>
+                                </el-form-item>
+                            </el-form>
+                        </div>
+                        <br>
+                        <div class="quill-editor">
+                            <quill-editor
+                                    v-model="content"
+                                    ref="myQuillEditor"
+                                    :options="editorOption"
+                                    @change="onEditorChange($event)">
+                            </quill-editor>
+                        </div>
+                        <div style="padding: 30px 0">
+                            <div id="__nc" style="width: 240px;margin-left: -14px;">
+                                <div id="nc"></div>
+                            </div>
                             <div>
-                                <span style="margin-right: 20px;font-weight: bold">{{ item.name }}</span>
-                                <span style="color: darkgray">{{ commentsTotal-index-(commentsPageNUM-1)*perNUM }}楼</span>
+                                <el-button type="primary" style="min-width: 210px;margin-top: 30px"
+                                           @click="post('form')"
+                                           :disabled="!validateStatus"
+                                           :loading="postLoading">发表评论
+                                </el-button>
                             </div>
-                            <div v-html="item.content"></div>
-                            <div style="text-align: right;font-size: 12px;color: darkgray">发表于：{{ item.createDate }}
-                            </div>
-                        </div>
-                        <div style="text-align: center;margin-top: 20px">
-                            <el-pagination
-                                    @current-change="paginationHandler"
-                                    layout="prev, pager, next"
-                                    :page-size="perNUM"
-                                    :total="commentsTotal">
-                            </el-pagination>
                         </div>
                     </div>
                 </div>
-
-                <div class="text item" style="margin-top: 20px">
-                    <div class="userinfo">
-                        <el-form label-position="top" ref="form" :rules="rules" :model="form" label-width="80px">
-                            <el-form-item style="padding-bottom: 10px" label="名字：" prop="name">
-                                <el-input size="small" v-model="form.name" style="max-width: 170px"></el-input>
-                            </el-form-item>
-                            <el-form-item style="padding-bottom: 10px" label="邮箱：" prop="email">
-                                <el-input size="small" v-model="form.email" style="max-width: 170px"></el-input>
-                            </el-form-item>
-                        </el-form>
-                    </div>
-                    <br>
-                    <div class="quill-editor">
-                        <quill-editor
-                                v-model="content"
-                                ref="myQuillEditor"
-                                :options="editorOption"
-                                @blur="onEditorBlur($event)" @focus="onEditorFocus($event)"
-                                @change="onEditorChange($event)">
-                        </quill-editor>
-                    </div>
-                    <div style="padding: 30px 0">
-                        <div id="__nc" style="width: 240px;margin-left: -14px;">
-                            <div id="nc"></div>
-                        </div>
-                        <div>
-                            <el-button type="primary" style="min-width: 210px;margin-top: 30px" @click="post('form')"
-                                       :disabled="!validateStatus"
-                                       :loading="postLoading">提交
-                            </el-button>
-                        </div>
-                    </div>
-                </div>
-            </el-card>
+            </div>
         </div>
     </div>
 </template>
@@ -102,6 +108,7 @@ import 'quill/dist/quill.snow.css';
 import 'quill/dist/quill.bubble.css';
 import ImageResize from '../../static/js/quill-image-resize-module'
 import Qs from 'qs'
+import divider from './other/divider'
 
 Quill.register('modules/imageResize', ImageResize);
 export default {
@@ -109,7 +116,7 @@ export default {
   data() {
     return {
       postLoading: false,//按钮提交加载状态
-      comments: '',//评论
+      comments: [],//评论
       commentsToShow: [],//分页内容
       perNUM: 5,//分页条数
       commentsTotal: 0,//评论数
@@ -143,11 +150,9 @@ export default {
         modules: {
           toolbar: {
             container: [
-              {'size': []},
               'bold', 'strike',
               {'background': []}, {'color': []},
               'blockquote', 'code-block',
-              {'align': []},
               'clean', 'link'
             ],
             handlers: {
@@ -235,7 +240,7 @@ export default {
             this.postLoading = true;
             //提交
             let param = {
-              topicID: this.$store.state.topic.id,
+              topicID: this.$route.query.id,
               name: this.form.name,
               email: this.form.email,
               content: this.content,
@@ -250,8 +255,8 @@ export default {
                     title: '成功',
                     message: '即将刷新页面'
                   });
-                  setTimeout(function () {
-                    window.location.reload();
+                  setTimeout(() => {
+                    window.location.reload()
                   }, 1000)
                 } else {
                   //验证码错误
@@ -295,7 +300,7 @@ export default {
         if (data.data.status !== -1) {
           this.topic = data.data.msg;
         } else {
-          console.log(data.data.msg);
+          console.log(data);
         }
         this.$nextTick(function () {
           /*DOM更新了*/
@@ -319,7 +324,8 @@ export default {
             this.loadingComment = false;
           })
         } else {
-          console.log(data.data.msg);
+          this.loadingComment = false;
+          //console.log(data);
         }
       })
       .catch(error => {
@@ -338,7 +344,8 @@ export default {
     },
   },
   components: {
-    quillEditor
+    quillEditor,
+    divider,
   }
 }
 
@@ -365,14 +372,13 @@ function randomWord(randomFlag, min, max) {
 
     .inner_content {
         padding: 20px 0;
-        max-width: 1000px;
-        margin: 0 auto;
     }
 
-    .box-card {
+    .inner_item {
         position: relative;
-        padding: 0 10px;
-        min-height: 200px
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 0 20px;
     }
 
     .info {
@@ -410,8 +416,7 @@ function randomWord(randomFlag, min, max) {
 
     .reply {
         padding: 10px 0 20px 0;
-        border-bottom: 1px solid #ebeef5;
-        min-height: 200px;
+        min-height: 100px;
     }
 
     /* 滑动条高度、边框、背景色等 */

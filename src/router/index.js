@@ -8,6 +8,7 @@ import Edit from '../components/admin/edit-topic'
 import adminIndex from '../components/admin/admin-index'
 import Chat from '../components/chat/main-chat'
 import View from '../components/view-topic'
+import Page404 from '../components/other/404'
 
 Vue.use(Router);
 
@@ -26,6 +27,10 @@ const router = new Router({
       redirect: '/index'
     },//重定向至首页路由
     /////////////////////
+    {
+      path: '/404',
+      component: Page404,
+    },
     {
       path: '/index',
       component: mainBody,
@@ -63,7 +68,11 @@ const router = new Router({
     {
       path: '/view',
       component: View,
-    }
+    },
+    {
+      path: "*",
+      redirect: "/404"
+    },
   ]
 });
 

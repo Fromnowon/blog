@@ -177,8 +177,6 @@ export default {
     .body_content {
         padding: 20px;
         min-height: 600px;
-        border-left: 1px solid lightgrey;
-        border-right: 1px solid lightgrey;
     }
 
     .right_card {

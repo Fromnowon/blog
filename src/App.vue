@@ -34,12 +34,16 @@ export default {
       });
     });
   },
-  watch: {
-    '$route'(to, from) {
-      //console.log('现在路由:', to.path, '来自路由:', from.path);
-    }
-  },
   components: {},
+  beforeCreate() {
+    let protocol = document.location.protocol;
+    if (this.API === '.') {
+      if (protocol === 'http:') {
+        //转换为https
+        window.location.href = 'https' + window.location.href.substr(4, window.location.href.length);
+      }
+    }
+  }
 }
 </script>
 

@@ -1,16 +1,12 @@
 <template>
     <div class="topic_item">
         <el-card shadow="hover" v-for="(item,index) in list_arr" :key="index">
-            <div slot="header">
-                <span v-text="item.title" @click="topic_detail(item.id)" class="topic_item_title"></span>
-                <div style="float: right;">
-                    <el-tag size="small":type="tag[item.grouping]">{{ group[item.grouping] }}</el-tag>
-                </div>
+            <div slot="header" style="padding-right: 40px">
+                <span v-text="item.title" class="topic_item_title" @click="topic_detail(item.id)"></span>
                 <!--<el-button style="float: right; padding: 3px 0" type="text"  @click="topic_detail">围观</el-button>-->
             </div>
             <!--<div class="topic_preview" v-html="item.content"></div>-->
-            <div class="topic_preview" v-html="item.content_preview"></div>
-            <br>
+            <router-link :to="'view?id='+item.id" class="topic_preview" v-html="item.content_preview"></router-link>
             <div class="topic_item_extra">
                 <span>浏览：{{ item.view }}</span>
                 &nbsp;&nbsp;&nbsp;
@@ -38,8 +34,6 @@ export default {
     return {
       total_page_num: null,
       list_arr: [],
-      group: {0: '默认', 1: '开发', 2: '分享', 3: '随笔', 4: '其他'},
-      tag: {0: '', 1: 'success', 2: 'info', 3: 'warning', 4: 'danger'},
     }
   },
   methods: {
@@ -97,8 +91,9 @@ export default {
     }
 
     .topic_preview {
+        color: #999;
         font-size: 14px;
-        padding: 20px 0;
+        text-decoration: none;
     }
 
     .topic_item_title {
@@ -107,12 +102,12 @@ export default {
     }
 
     .topic_item_title:hover {
-        color: dodgerblue;
+        color: red;
     }
 
     .topic_item_extra {
+        margin-top: 20px;
         text-align: right;
-        color: #b5b5b5;
         font-size: 12px;
     }
 </style>
