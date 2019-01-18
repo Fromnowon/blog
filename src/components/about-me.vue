@@ -1,8 +1,5 @@
 <template>
     <div class="about_me">
-        <div>
-            <img style="display: none" v-for="src in qcode" :src="src" alt="qcode">
-        </div>
         <div style="margin: 20px 0;font-size: 14px">
             <div style="margin-bottom: 50px">
                 <p>本博客成分：</p>
@@ -23,7 +20,6 @@ export default {
   name: "about-me",
   data() {
     return {
-      qcode: ['./static/images/qcode1.JPG', './static/images/qcode2.JPG'],
     }
   }
 }

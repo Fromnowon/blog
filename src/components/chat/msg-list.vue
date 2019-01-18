@@ -23,16 +23,16 @@ export default {
   ],
   data() {
     return {
-      avatar_src: "./static/images/icon.png",
+      avatar_src: require("../../../static/images/icon.png"),
     }
   },
   mounted() {
     //读取头像
     if (!this.data.avatar) {
       //user
-      this.avatar_src = "./static/images/user.jpg";
+      this.avatar_src = require("../../../static/images/icon.png");
     } else {
-      this.avatar_src = "./static/images/icon.png";
+      this.avatar_src = require("../../../static/images/icon.png");
     }
     //通知父组件
     this.$emit('loaded');

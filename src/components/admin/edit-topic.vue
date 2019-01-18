@@ -145,7 +145,9 @@ export default {
         this.$message.error('内容不完整，请检查');
         return;
       }
-      this.$axios.post(this.API + '/backend.php?action=new_topic', Qs.stringify(data))
+      this.$axios(this.API + '/backend.php?action=new_topic', {
+        params: data
+      })
         .then(res => {
           console.log(res.data);
         })

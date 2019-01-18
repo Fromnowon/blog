@@ -42,21 +42,23 @@
                         <span v-if="comments.length===0">暂无</span>
                         <div v-else>
                             <div v-for="(item,index) in commentsToShow"
-                                 style="font-size: 14px;padding:20px;border-bottom: 1px solid whitesmoke">
+                                 style="font-size: 14px;padding:10px;border-bottom: 1px solid whitesmoke">
                                 <div>
                                     <span style="margin-right: 20px;font-weight: bold">{{ item.name }}</span>
                                     <span style="color: darkgray">{{ commentsTotal-index-(commentsPageNUM-1)*perNUM }}楼</span>
+                                    <div style="float: right;font-size: 12px;color: darkgray">
+                                        发表于：{{ item.createDate}}
+                                    </div>
                                 </div>
                                 <div v-html="item.content"></div>
-                                <div style="text-align: right;font-size: 12px;color: darkgray">发表于：{{ item.createDate }}
-                                </div>
                             </div>
                             <div style="text-align: center;margin-top: 20px">
                                 <el-pagination
                                         @current-change="paginationHandler"
                                         layout="prev, pager, next"
                                         :page-size="perNUM"
-                                        :total="commentsTotal">
+                                        :total="commentsTotal"
+                                        background>
                                 </el-pagination>
                             </div>
                         </div>
@@ -118,7 +120,7 @@ export default {
       postLoading: false,//按钮提交加载状态
       comments: [],//评论
       commentsToShow: [],//分页内容
-      perNUM: 5,//分页条数
+      perNUM: 10,//分页条数
       commentsTotal: 0,//评论数
       commentsPageNUM: 1,//默认第一页
       uuid: '',//唯一标识符
@@ -247,17 +249,18 @@ export default {
               captcha: this.captchaInput,
               uuid: this.uuid
             };
-            this.$axios.post(this.API + '/backend.php?action=postComment', Qs.stringify(param))
+            this.$axios(this.API + '/backend.php?action=postComment', {
+              params: param
+            })
               .then(data => {
                 this.postLoading = false;
                 if (data.data.status === 1) {
                   this.$notify.success({
                     title: '成功',
-                    message: '即将刷新页面'
+                    message: '你发布了评论'
                   });
-                  setTimeout(() => {
-                    window.location.reload()
-                  }, 1000)
+                  //拉取评论
+                  this.pullComments();
                 } else {
                   //验证码错误
                   this.captchaError = true;
@@ -286,15 +289,46 @@ export default {
     onEditorChange({quill, html, text}) {
       this.content_text = text;
     }, // 内容改变事件
+    pullComments() {
+      this.comments = this.commentsToShow = [];
+      this.$axios(this.API + '/backend.php?action=pullComments', {
+        params: {
+          id: this.$route.query.id
+        }
+      })
+        .then(data => {
+          if (data.data.status !== -1) {
+            this.commentsTotal = data.data.msg.length;
+            this.comments = data.data.msg;
+            for (let i = 0; i < this.perNUM && i < this.commentsTotal; i++) {
+              this.commentsToShow.push(this.comments[i]);
+            }
+            this.$nextTick(function () {
+              /*DOM更新了*/
+              this.loadingComment = false;
+            })
+          } else {
+            this.loadingComment = false;
+            //console.log(data);
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    }
   },
   created() {
     //生成随机串
     // this.uuid = randomWord(false, 16);
     //若使用mounted，控制台会报错，因为data已经被使用，但值为null
-    //读取数据
-    let id = this.$route.query.id;
+
+
     //拉取文章数据
-    this.$axios.post(this.API + '/backend.php?action=get_topic_detail', Qs.stringify({id: id}))
+    this.$axios(this.API + '/backend.php?action=get_topic_detail', {
+      params: {
+        id: this.$route.query.id
+      }
+    })
       .then(data => {
         data.data.msg.tags = JSON.parse(data.data.msg.tags);
         if (data.data.status !== -1) {
@@ -311,26 +345,7 @@ export default {
         console.log(error);
       });
     //拉取评论
-    this.$axios.post(this.API + '/backend.php?action=pullComments', Qs.stringify({id: id}))
-      .then(data => {
-        if (data.data.status !== -1) {
-          this.commentsTotal = data.data.msg.length;
-          this.comments = data.data.msg;
-          for (let i = 0; i < this.perNUM && i < this.commentsTotal; i++) {
-            this.commentsToShow.push(this.comments[i]);
-          }
-          this.$nextTick(function () {
-            /*DOM更新了*/
-            this.loadingComment = false;
-          })
-        } else {
-          this.loadingComment = false;
-          //console.log(data);
-        }
-      })
-      .catch(error => {
-        console.log(error);
-      });
+    this.pullComments();
   },
   mounted() {
     let vm = this;

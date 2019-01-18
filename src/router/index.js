@@ -13,7 +13,7 @@ import Page404 from '../components/other/404'
 Vue.use(Router);
 
 const router = new Router({
-  //mode: 'history',
+  mode: 'history',
   scrollBehavior (to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition

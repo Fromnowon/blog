@@ -67,7 +67,7 @@ export default {
     return {
       test: [1, 2, 3, 4, 5],
       controller: 1,
-      topicIMG: ['./static/images/topic/1.jpg', './static/images/topic/2.jpg', './static/images/topic/3.jpg'],
+      topicIMG: [require('../../static/images/topic/1.jpg'), require('../../static/images/topic/2.jpg'), require('../../static/images/topic/3.jpg')],
       hottest: [],//点击最多
       newest: [],//最新评论
       commentPreviewLength: 30,//评论预览长度
@@ -82,7 +82,7 @@ export default {
   },
   mounted() {
     //点击最多
-    this.$axios.post(this.API + '/backend.php?action=pullHottest')
+    this.$axios(this.API + '/backend.php?action=pullHottest')
       .then(data => {
         if (data.data.status !== -1) {
           this.hottest = data.data.msg;
@@ -94,7 +94,7 @@ export default {
         console.log(error);
       });
     //最新评论
-    this.$axios.post(this.API + '/backend.php?action=pullNewsComments')
+    this.$axios(this.API + '/backend.php?action=pullNewsComments')
       .then(data => {
         if (data.data.status !== -1) {
           for (let i = 0, len = data.data.msg.length; i < len; i++) {

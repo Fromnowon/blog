@@ -27,7 +27,7 @@ export default {
     var txt_max_size = 25;
     var keypress = false;
     var acclerate = 2;
-    for (var i = 0; i < 8; i++) {
+    for (var i = 0; i < 16; i++) {
       word_arr.push({
         x: random(0, width),
         y: random(0, height),
@@ -58,10 +58,10 @@ export default {
     }
 
     function render() {
-      ctx.fillStyle = "rgba(0,0,0,1)";
+      ctx.fillStyle = "#f5f6f7";
       ctx.fillRect(0, 0, width, height);
 
-      ctx.fillStyle = "#fff";
+      ctx.fillStyle = "#000";
       for (var i = 0; i < word_arr.length; i++) {
         ctx.font = word_arr[i].size + "px sans-serif";
         var w = ctx.measureText(word_arr[i].text);

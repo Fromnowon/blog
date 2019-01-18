@@ -34,16 +34,6 @@ export default {
       });
     });
   },
-  components: {},
-  beforeCreate() {
-    let protocol = document.location.protocol;
-    if (this.API === '.') {
-      if (protocol === 'http:') {
-        //转换为https
-        window.location.href = 'https' + window.location.href.substr(4, window.location.href.length);
-      }
-    }
-  }
 }
 </script>
 

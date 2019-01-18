@@ -304,10 +304,8 @@ export default {
             username: this.loginInfo.username,
             password: this.loginInfo.password,
           };
-          vm.$axios.post(this.API + '/backend.php?action=login', Qs.stringify(params), {
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            }
+          vm.$axios(this.API + '/backend.php?action=login', {
+            params: params
           })
             .then(data => {
               if (data.data == 'PASS') {

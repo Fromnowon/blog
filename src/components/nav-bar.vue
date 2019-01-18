@@ -1,7 +1,7 @@
 <template>
     <div class="nav_bar">
         <el-menu :default-active="currentPath" class="el-menu-demo" mode="horizontal" v-on:select="selectItem"
-                 menu-trigger="hover"
+                 menu-trigger="click"
                  background-color="#394149"
                  text-color="#fff"
                  active-text-color="#ffd04b"

@@ -28,8 +28,8 @@ Vue.prototype.$util = Util;
 Vue.prototype.$axios = Axios;
 Vue.prototype.$nprogress = NProgress;
 Vue.prototype.CHAT = '/chat';
-//Vue.prototype.API = '.';
-Vue.prototype.API = '/api';
+Vue.prototype.API = '';
+//Vue.prototype.API = '/api';
 
 NProgress.inc(0.2);
 NProgress.configure({easing: 'ease', speed: 500, showSpinner: false});

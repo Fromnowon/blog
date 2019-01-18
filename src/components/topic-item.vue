@@ -1,8 +1,11 @@
 <template>
     <div class="topic_item">
         <el-card shadow="hover" v-for="(item,index) in list_arr" :key="index">
-            <div slot="header" style="padding-right: 40px">
+            <div slot="header" style="line-height: 24px">
                 <span v-text="item.title" class="topic_item_title" @click="topic_detail(item.id)"></span>
+                <el-tag style="float: right;margin-top: 10px" size="small" :type="colors[item.grouping]">{{ tags[item.grouping] }}
+                </el-tag>
+                <div style="clear: both"></div>
                 <!--<el-button style="float: right; padding: 3px 0" type="text"  @click="topic_detail">围观</el-button>-->
             </div>
             <!--<div class="topic_preview" v-html="item.content"></div>-->
@@ -28,12 +31,16 @@
 <script>
 import Qs from 'qs';
 
+const PAGE_NUM = 10;//每页显示条数
+
 export default {
   name: "topic-item",
   data() {
     return {
       total_page_num: null,
       list_arr: [],
+      tags: {0: '默认', 1: '开发', 2: '分享', 3: '随笔', 4: '其他'},
+      colors: ['info', '', 'success', 'warning', 'danger'],
     }
   },
   methods: {
@@ -45,7 +52,9 @@ export default {
       //切换页面
       let vm = this;
       vm.$store.commit('loadingControl', 1);
-      this.$axios.post(this.API + '/backend.php?action=get_topics', Qs.stringify({'num': num}))
+      this.$axios(this.API + '/backend.php?action=get_topics', {
+        params: {'num': num, 'per': PAGE_NUM}
+      })
         .then(function (res) {
           vm.list_arr = [];
           for (let item of res.data.arr) {
@@ -59,12 +68,13 @@ export default {
         })
     }
   },
-  created() {
+  mounted() {
     //拉取第一页数据
     let vm = this;
     vm.$store.commit('loadingControl', 1);
-    const PAGE_NUM = 5;//每页显示条数
-    this.$axios.post(this.API + '/backend.php?action=get_topics', Qs.stringify({'num': 1}))
+    this.$axios(this.API + '/backend.php?action=get_topics', {
+      params: {'num': 1, 'per': PAGE_NUM}
+    })
       .then(function (res) {
         vm.total_page_num = Math.ceil(parseInt(res.data.total) / PAGE_NUM);
         for (let item of res.data.arr) {
@@ -77,7 +87,7 @@ export default {
       .catch(function (error) {
         console.log(error);
       })
-  },
+  }
 }
 </script>
 
@@ -99,6 +109,9 @@ export default {
     .topic_item_title {
         cursor: pointer;
         font-weight: bold;
+        font-size: 20px;
+        float: left;
+        margin: 10px 0;
     }
 
     .topic_item_title:hover {
