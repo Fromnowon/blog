@@ -1,58 +1,32 @@
 <template>
     <div class="main_content">
-        <div class="bg_content">
-            <blogHeader></blogHeader>
-            <div class="body_content">
-                <el-row :gutter="20">
-                    <el-col :md="16" style="position: relative">
-                        <router-view></router-view>
-                    </el-col>
-                    <el-col :md="8" class="right">
-                        <!--预留评论等其他内容-->
-                        <el-card shadow="hover" class="right_card">
-                            <div>
-                                <div class="nav_search">
-                                    <el-input suffix-icon="el-icon-search" placeholder="搜索"
-                                              @keydown.enter.native="onSearch"
-                                              :disabled="true"></el-input>
-                                </div>
-                                <div class="myTopic">
-                                    <el-carousel height="160px" :interval="5000">
-                                        <el-carousel-item v-for="(item,index) in topicIMG" :key="index">
-                                            <div style="position: absolute;line-height: 12px;background: rgba(255,255,255,0.51);width: 100%;padding: 10px">
-                                                <span style="font-size: 12px;font-weight: bold">这是第{{ index+1 }}张图</span>
-                                            </div>
-                                            <img style="width: 100%" :src="item" alt="pic">
-                                        </el-carousel-item>
-                                    </el-carousel>
-                                </div>
-                                <div class="hottest">
-                                    <p style="font-weight: bold">最受欢迎文章：</p>
-                                    <router-link :key="index" style="margin-top: 10px" :to="'/view?id='+item.id"
-                                                 v-for="(item,index) in hottest">{{item.title }}
-                                    </router-link>
-                                </div>
-                                <div class="newest">
-                                    <p style="font-weight: bold">最新评论：</p>
-                                    <div v-for="(item,index) in newest" :key="index">
-                                        <p style="font-size: 14px">{{ item.content }}</p>
-
-                                        <div style="font-size: 12px;color: grey;text-align: right">
-                                            <span>{{ item.name }}</span>
-                                            发表于
-                                            <router-link :to="'/view?id='+item.topicID">《{{ item.title }}》</router-link>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </el-card>
-                        <p></p>
-                    </el-col>
-                </el-row>
+        <el-container>
+            <el-aside
+                    :style="{ marginLeft:isCollapse?'-300px':'0',transition:'margin 0.5s',textAlign:'unset',position:'fixed',zIndex:998,height:'100%'}">
+                <i class="el-icon-close menuBtn" style="top: 10px;right: 14px;font-size: 22px"
+                   @click="isCollapse=!isCollapse"></i>
+                <NavBar @closeMenu="isCollapse=true"></NavBar>
+            </el-aside>
+            <div style="width: 100%" @click="closeMenuByClick">
+                <el-header :style="{ top:headerShow?'0':'-70px',zIndex: 997 }">
+                    <div style="max-width: 960px;margin: 0 auto;display: flex">
+                        <el-button style="height: 32px;align-self: center" round type="primary" size="small" @click.stop="isCollapse=!isCollapse">
+                            <i class="fa fa-navicon"></i>
+                            &nbsp;菜单
+                        </el-button>
+                        <el-input size="small" suffix-icon="el-icon-search" placeholder="搜索"
+                                  class="navSearch"
+                                  @keydown.enter.native="onSearch"
+                                  :disabled="true" style="max-width: 200px;margin-left: auto">
+                        </el-input>
+                    </div>
+                </el-header>
+                <el-main class="main_item">
+                    <router-view style="min-height: 640px"></router-view>
+                </el-main>
+                <blog-footer></blog-footer>
             </div>
-
-            <blogFooter></blogFooter>
-        </div>
+        </el-container>
     </div>
 </template>
 
@@ -60,17 +34,20 @@
 import aboutMe from './about-me'
 import blogHeader from './header'
 import blogFooter from './footer'
+import NavBar from "./nav-bar";
 
 export default {
   name: "main_body",
   data() {
     return {
-      test: [1, 2, 3, 4, 5],
+      isCollapse: true,//侧栏状态
       controller: 1,
       topicIMG: [require('../../static/images/topic/1.jpg'), require('../../static/images/topic/2.jpg'), require('../../static/images/topic/3.jpg')],
       hottest: [],//点击最多
       newest: [],//最新评论
       commentPreviewLength: 30,//评论预览长度
+      scrollValue: 0,//滚动距离
+      headerShow: true,//顶部显隐
     }
   },
   watch: {
@@ -79,6 +56,17 @@ export default {
         this.$forceUpdate();
       }
     },
+    scrollValue(newValue, oldValue) {
+      if (oldValue > newValue) {
+        //上滚
+        this.headerShow = true;
+      } else {
+        //下滚
+        if (newValue > 70) {
+          this.headerShow = false;
+        }
+      }
+    }
   },
   mounted() {
     //点击最多
@@ -110,99 +98,107 @@ export default {
       })
       .catch(error => {
         console.log(error);
-      })
+      });
   },
   methods: {
+    scroll() {
+      //滚动监听
+      //关闭侧栏
+      if (!this.isCollapse) {
+        this.isCollapse = true;
+      }
+      this.scrollValue = document.documentElement.scrollTop || document.body.scrollTop;
+    },
+    closeMenuByClick() {
+      //点击关闭侧栏
+      if (!this.isCollapse) {
+        this.isCollapse = true;
+      }
+    },
+    handleOpen(key, keyPath) {
+      console.log(key, keyPath);
+    },
+    handleClose(key, keyPath) {
+      console.log(key, keyPath);
+    },
     onSearch() {
-      this.$notify.error({
-        title: '错误',
-        message: '此功能施工中'
-      });
+
     },
   },
   components: {
+    NavBar,
     aboutMe,
     blogHeader,
     blogFooter
   },
-  beforeDestroy() {
-    //跳转前销毁监听
+  activated() {
+    //监听滚动
+    window.addEventListener('scroll', this.scroll, false);
+  },
+  beforeRouteLeave(to, from, next) {
+    window.removeEventListener('scroll', this.scroll);
+    next();
   }
 }
 </script>
 
 <style scoped>
-    .right_card a {
-        text-decoration: none;
-        color: #3a9bf5;
+    /*//////////////////////////////////////*/
+    .menuBtn {
+        position: absolute;
+        top: 20px;
+        z-index: 999;
+        cursor: pointer;
     }
 
-    .right_card a:hover {
-        color: red;
-    }
-
-    .bg {
-        position: fixed;
-        z-index: 1;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        transition: top 1s;
-    }
-
-    .bg > img {
-        margin: -10px;
-        height: 110%;
-        width: 110%;
-        /*filter: progid:DXImageTransform.Microsoft.Blur(PixelRadius=3, MakeShadow=false);*/
-        /*-webkit-filter: blur(3px);*/
-        /*-moz-filter: blur(3px);*/
-        /*-ms-filter: blur(3px);*/
-        /*filter: blur(3px);*/
-    }
-
-    .bg_content {
-        position: relative;
-        z-index: 10;
-        background: white;
-    }
-
-    .main_content {
+    .main_item {
+        padding-top: 80px;
         max-width: 1000px;
         margin: 0 auto;
-        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
     }
 
-    .body_content {
-        padding: 20px;
-        min-height: 600px;
+    .el-header {
+        background-color: #B3C0D1;
+        color: #333;
+        line-height: 60px;
+        position: fixed;
+        width: 100%;
+        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.14);
+        transition: top 0.5s;
     }
 
-    .right_card {
-        min-height: 200px;
+    .navSearch >>> input {
+        border-radius: 20px;
     }
 
-    .myTopic {
-        margin: 30px 0;
+    .el-aside {
+        border-right: 1px solid lightgrey;
+        background: white;
+        color: #333;
+        text-align: center;
+        line-height: 200px;
     }
 
-    .hottest {
-        margin: 40px 0;
+    .aside-menu {
+        border: 0;
+        margin-top: 40px;
     }
 
-    .newest {
-        margin: 40px 0;
+    .el-main {
+
     }
 
-    .hottest a {
-        font-size: 14px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: -webkit-box;
-        -webkit-line-clamp: 1;
-        -webkit-box-orient: vertical;
-        word-break: break-all; /* 追加这一行代码 */
+    body > .el-container {
+        margin-bottom: 40px;
+    }
+
+    .el-container:nth-child(5) .el-aside,
+    .el-container:nth-child(6) .el-aside {
+        line-height: 260px;
+    }
+
+    .el-container:nth-child(7) .el-aside {
+        line-height: 320px;
     }
 
 

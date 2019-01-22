@@ -1,15 +1,27 @@
 <template>
     <div class="topic_content" style="background: white">
-        <div class="inner_content">
-            <div class="inner_item" style="margin-bottom: 20px">
-                <a href="javascript:void(0)" @click="go_back"
-                   style="text-decoration: none;color: red;font-size: 14px"><i
-                        class="fa fa-angle-left"></i> 返回</a>
+        <div :class="['header',isTitleVisible?'header-visible':'header-invisible']">
+            <div class="inner_item" style="display: flex;">
+                <div style="font-size: 24px;font-weight: bold;margin-right: 20px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;"
+                     :style="{ opacity:isTitleVisible?0:1 }">{{ topic.title }}
+                </div>
+                <div style="margin-left: auto;display: flex">
+                    <el-button round size="small" style="height: 32px;align-self: center" icon="el-icon-edit"
+                               type="success" @click="postComment">评论
+                    </el-button>
+                    <el-button style="color: red;height: 32px;align-self: center;" round @click="go_back" size="small"
+                               icon="el-icon-arrow-left">返回
+                    </el-button>
+                </div>
             </div>
+        </div>
+        <div class="inner_content">
             <div v-loading="loadingTopic" class="inner_item"
-                 style="margin-bottom: 40px;">
+                 style="margin-top: 80px;margin-bottom: 60px">
                 <div>
-                    <div style="font-size: 24px;font-weight: bold;margin-bottom: 20px;">{{ topic.title }}</div>
+                    <div class="title" style="font-size: 24px;font-weight: bold;margin-bottom: 20px;">
+                        {{ topic.title}}
+                    </div>
                     <div class="group_tag">
                         <i class="fa fa-folder"></i>
                         <span style="margin: 0 20px 0 5px">{{ group[topic.grouping] }}</span>
@@ -64,7 +76,7 @@
                         </div>
                     </div>
 
-                    <div class="text item" style="margin-top: 20px">
+                    <div class="postComment" style="margin-top: 20px">
                         <div class="userinfo">
                             <el-form label-position="top" ref="form" :rules="rules" :model="form" label-width="80px">
                                 <el-form-item style="padding-bottom: 10px" label="名字：" prop="name">
@@ -127,6 +139,7 @@ export default {
       validateStatus: false,//验证状态
       loadingComment: true,//加载中
       loadingTopic: true,
+      isTitleVisible: true,//标题是否可见
       group: {0: '默认', 1: '开发', 2: '分享', 3: '随笔', 4: '其他'},
       form: {
         name: '',
@@ -180,6 +193,14 @@ export default {
     }
   },
   methods: {
+    postComment() {
+      animateScroll(this.$util.getDomByClass('postComment')[0], 32);
+    },
+    scroll() {
+      //滚动监听
+      let title = this.$util.getDomByClass('title')[0];
+      this.isTitleVisible = !(title.offsetTop + title.offsetHeight - document.documentElement.scrollTop - 60 < 0);
+    },
     validate() {
       let nc_token = ["CF_APP_1", (new Date()).getTime(), Math.random()].join(':');
       let nc = NoCaptcha.init({
@@ -222,7 +243,7 @@ export default {
       });
       NoCaptcha.on('success', () => {
         this.validateStatus = true;
-        console.log('验证通过')
+        //console.log('验证通过')
       })
     },
     paginationHandler(pageNUM) {
@@ -352,11 +373,19 @@ export default {
     vm.editor.container.style.height = '200px';
     //启用验证
     this.validate();
+    setTimeout(() => {
+      //监听滚动，修正路由调整滚动条不触发滚动监听的bug
+      window.addEventListener('scroll', this.scroll, false);
+    }, 0)
   },
   computed: {
     editor() {
       return this.$refs.myQuillEditor.quill;
     },
+  },
+  beforeRouteLeave(to, from, next) {
+    window.removeEventListener('scroll', this.scroll);
+    next();
   },
   components: {
     quillEditor,
@@ -381,16 +410,54 @@ function randomWord(randomFlag, min, max) {
   return str;
 }
 
+function animateScroll(element, speed) {
+  let rect = element.getBoundingClientRect();
+  //获取元素相对窗口的top值，此处应加上窗口本身的偏移
+  let top = window.pageYOffset + rect.top;
+  let currentTop = 0;
+  let requestId;
+
+  //采用requestAnimationFrame，平滑动画
+  function step(timestamp) {
+    currentTop += speed;
+    if (currentTop <= top) {
+      window.scrollTo(0, currentTop);
+      requestId = window.requestAnimationFrame(step);
+    } else {
+      window.cancelAnimationFrame(requestId);
+    }
+  }
+
+  window.requestAnimationFrame(step);
+}
+
 </script>
 
 <style scoped>
+    .header {
+        height: 60px;
+        line-height: 60px;;
+        position: fixed;
+        width: 100%;
+        z-index: 999;
+        background: white;
+    }
+
+    .header-visible {
+        border-bottom: 0;
+        background: transparent;
+    }
+
+    .header-invisible {
+        border-bottom: 1px solid #e0e0e0;
+        background: white;
+    }
 
     .inner_content {
         padding: 20px 0;
     }
 
     .inner_item {
-        position: relative;
         max-width: 1000px;
         margin: 0 auto;
         padding: 0 20px;

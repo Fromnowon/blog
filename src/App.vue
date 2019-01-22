@@ -38,8 +38,9 @@ export default {
 </script>
 
 <style>
+
     #app {
-        background: #f5f6f7;
+        /*background: #f5f6f7;*/
     }
 
     .el-card {
@@ -60,6 +61,10 @@ export default {
 
     #nprogress .bar {
         z-index: 999;
+    }
+
+    .hidden {
+        display: none;
     }
 
     /*::-webkit-scrollbar {*/

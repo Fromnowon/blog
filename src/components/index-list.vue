@@ -1,8 +1,5 @@
 <template>
-    <div class="content">
-        <div class="loading" v-show="loading">
-            <i class="el-icon-loading"></i>
-        </div>
+    <div class="content" v-loading="loading">
         <topicItem @loaded="loaded"></topicItem>
     </div>
 </template>
@@ -29,11 +26,7 @@ export default {
 </script>
 
 <style scoped>
-    .loading {
-        font-size: 30px;
-        padding-top: 100px;
-        text-align: center;
-        height: 0;
-        width: 100%;
+    .content{
+
     }
 </style>

@@ -14,11 +14,11 @@ Vue.use(Router);
 
 const router = new Router({
   mode: 'history',
-  scrollBehavior (to, from, savedPosition) {
+  scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition
     } else {
-      return { x: 0, y: 0 }
+      return {x: 0, y: 0}
     }
   },
   routes: [
@@ -81,7 +81,7 @@ router.beforeEach((to, from, next) => {
   next();
 });
 
-router.afterEach(() => {
+router.afterEach((to, from) => {
   Vue.prototype.$nprogress.done();
 });
 

@@ -1,15 +1,12 @@
 <template>
     <div class="nav_bar">
-        <el-menu :default-active="currentPath" class="el-menu-demo" mode="horizontal" v-on:select="selectItem"
+        <el-menu :default-active="currentPath" class="el-menu-demo" v-on:select="selectItem"
                  menu-trigger="click"
-                 background-color="#394149"
-                 text-color="#fff"
-                 active-text-color="#ffd04b"
                  :unique-opened="true"
                  router>
-            <el-menu-item index="/index">首页</el-menu-item>
+            <el-menu-item index="/index"><i class="fa fa-send"></i>&nbsp;&nbsp;&nbsp;首页</el-menu-item>
             <el-submenu index="2">
-                <template slot="title">分类</template>
+                <template slot="title"><i class="fa fa-tags"></i>&nbsp;&nbsp;&nbsp;分类</template>
                 <el-menu-item index="2-1">编程</el-menu-item>
                 <el-menu-item index="2-2">杂谈</el-menu-item>
                 <el-menu-item index="2-3">其他</el-menu-item>
@@ -20,8 +17,9 @@
                     <el-menu-item index="2-4-3">选项3</el-menu-item>
                 </el-submenu>
             </el-submenu>
-            <el-menu-item index="/index/about">关于我</el-menu-item>
-            <el-menu-item index="/index/chat">小玩意儿</el-menu-item>
+            <el-menu-item index="/admin"><i class="fa fa-wrench"></i>&nbsp;&nbsp;&nbsp;管理后台</el-menu-item>
+            <el-menu-item index="/index/about"><i class="fa fa-info-circle"></i>&nbsp;&nbsp;&nbsp;关于我</el-menu-item>
+            <el-menu-item index="/index/chat"><i class="fa fa-flask"></i>&nbsp;&nbsp;&nbsp;小玩意儿</el-menu-item>
         </el-menu>
     </div>
 </template>
@@ -36,7 +34,7 @@ export default {
   },
   methods: {
     selectItem(key, keyPath) {
-      return false;
+      this.$emit('closeMenu');
     },
   },
   activated() {
@@ -52,8 +50,7 @@ export default {
     }
 
     .el-menu {
-        padding: 0 20px;
+        padding-top: 40px;
         border: 0 !important;
-        background: #394149;
     }
 </style>
