@@ -46,7 +46,7 @@
             <divider></divider>
             <div style="position: relative;padding: 40px 10px">
                 <div class="inner_item">
-                    <div>
+                    <div class="comment-title">
                         <span style="font-size: 18px">评论：</span>
                     </div>
 
@@ -62,7 +62,7 @@
                                         发表于：{{ item.createDate}}
                                     </div>
                                 </div>
-                                <div v-html="item.content"></div>
+                                <div style="font-size: 14px" v-html="item.content"></div>
                             </div>
                             <div style="text-align: center;margin-top: 20px">
                                 <el-pagination
@@ -90,6 +90,7 @@
                         <br>
                         <div class="quill-editor">
                             <quill-editor
+                                    :style="{ boxShadow:isFull?'0 0 5px #FF9900':'0 0 0 0' }"
                                     v-model="content"
                                     ref="myQuillEditor"
                                     :options="editorOption"
@@ -112,6 +113,7 @@
                 </div>
             </div>
         </div>
+        <ToTop></ToTop>
     </div>
 </template>
 
@@ -123,6 +125,7 @@ import 'quill/dist/quill.bubble.css';
 import ImageResize from '../../static/js/quill-image-resize-module'
 import Qs from 'qs'
 import divider from './other/divider'
+import ToTop from "./other/toTop";
 
 Quill.register('modules/imageResize', ImageResize);
 export default {
@@ -140,6 +143,8 @@ export default {
       loadingComment: true,//加载中
       loadingTopic: true,
       isTitleVisible: true,//标题是否可见
+      maxLength: 800,//评论最大长度
+      isFull: false,//编辑器长度状态
       group: {0: '默认', 1: '开发', 2: '分享', 3: '随笔', 4: '其他'},
       form: {
         name: '',
@@ -194,7 +199,7 @@ export default {
   },
   methods: {
     postComment() {
-      animateScroll(this.$util.getDomByClass('postComment')[0], 32);
+      animateScroll(this.$util.getDomByClass('postComment')[0], 128, -60);//上抬60像素
     },
     scroll() {
       //滚动监听
@@ -258,7 +263,21 @@ export default {
     post(form) {
       this.$refs[form].validate((valid) => {
         if (valid) {
+          //校验时间戳
+          if (this.$store.state.userInfo !== null) {
+            //此用户存存在发言记录
+            let time = new Date().getTime() / 1000 - this.$store.state.userInfo.time / 1000;
+            console.log('间隔秒数：' + time);
+            if (time < 1) {
+              this.$message.error('距离上次发言不足3分钟，请等待');
+              return;
+            }
+          }
+
           if (!this.content_text.match(/^\s*$/)) {
+            if (!this.content_text.length > this.maxLength) {
+              this.$message.error('内容过长，请删减');
+            }
             //改变按钮样式
             this.postLoading = true;
             //提交
@@ -268,25 +287,50 @@ export default {
               email: this.form.email,
               content: this.content,
               captcha: this.captchaInput,
-              uuid: this.uuid
             };
             this.$axios(this.API + '/backend.php?action=postComment', {
               params: param
             })
               .then(data => {
                 this.postLoading = false;
-                if (data.data.status === 1) {
-                  this.$notify.success({
-                    title: '成功',
-                    message: '你发布了评论'
-                  });
-                  //拉取评论
-                  this.pullComments();
-                } else {
-                  //验证码错误
-                  this.captchaError = true;
-                  console.log(data);
+                switch (data.data.status) {
+                  case 0: {
+                    //触发审核
+                    this.$alert('该评论经审核后显示', '提示', {
+                      confirmButtonText: '知道了',
+                      type: 'warning',
+                      center: true
+                    });
+                    break;
+                  }
+                  case 1: {
+                    this.$notify.success({
+                      title: '成功',
+                      message: '你发表了评论'
+                    });
+                    //拉取评论
+                    this.pullComments();
+                    setTimeout(() => {
+                      //定位到评论
+                      animateScroll(this.$util.getDomByClass('comment-title')[0], 64, -60);
+                    }, 1000);
+                    break;
+                  }
+                  default: {
+                    //其他错误
+                    console.log(data);
+                  }
                 }
+                //初始化编辑内容，并记录用户相关信息
+                this.$refs[form].clearValidate();
+                this.content = '';
+                NoCaptcha.reset();
+                this.validateStatus = false;
+                this.$store.commit('setUserInfo', {
+                  name: param.name,
+                  email: param.email,
+                  time: new Date().getTime()
+                });
               })
               .catch(error => {
                 this.postLoading = false;
@@ -309,6 +353,9 @@ export default {
     },
     onEditorChange({quill, html, text}) {
       this.content_text = text;
+      //丢弃溢出字符串，并增加提示
+      this.isFull = text.length >= this.maxLength;
+      quill.deleteText(this.maxLength, 1, html);
     }, // 内容改变事件
     pullComments() {
       this.comments = this.commentsToShow = [];
@@ -369,6 +416,14 @@ export default {
     this.pullComments();
   },
   mounted() {
+    if (this.$store.state.userInfo !== null) {
+      //读取用户信息
+      this.$set(this.form, 'name', this.$store.state.userInfo.name);
+      this.$set(this.form, 'email', this.$store.state.userInfo.email);
+      this.$nextTick(() => {
+        this.$refs['form'].clearValidate();
+      });
+    }
     let vm = this;
     vm.editor.container.style.height = '200px';
     //启用验证
@@ -390,6 +445,7 @@ export default {
   components: {
     quillEditor,
     divider,
+    ToTop
   }
 }
 
@@ -410,10 +466,10 @@ function randomWord(randomFlag, min, max) {
   return str;
 }
 
-function animateScroll(element, speed) {
+function animateScroll(element, speed, patch) {
   let rect = element.getBoundingClientRect();
   //获取元素相对窗口的top值，此处应加上窗口本身的偏移
-  let top = window.pageYOffset + rect.top;
+  let top = window.pageYOffset + rect.top + patch;
   let currentTop = 0;
   let requestId;
 

@@ -40,6 +40,8 @@ const store = new Vuex.Store({
   //待添加
   state: {
     win_size: null,
+    loginInfo: null,
+    userInfo: null,//用于保存用户信息，并限制发言间隔
   },
   mutations: {
     loadingControl(state, param) {
@@ -49,6 +51,12 @@ const store = new Vuex.Store({
     setSize(state, param) {
       state.win_size = param;
     },
+    setLoginInfo(state, param) {
+      state.loginInfo = param;
+    },
+    setUserInfo(state, param) {
+      state.userInfo = param;
+    }
   }
 });
 

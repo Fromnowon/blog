@@ -141,7 +141,7 @@ export default {
     document.onkeydown = function (e) {
       let keyCode = e.keyCode || e.which || e.charCode;
       let altKey = e.altKey;
-      if (altKey && keyCode == 83) {
+      if (altKey && keyCode === 83) {
         //提交内容
         vue_obj.chat_submit();
       }

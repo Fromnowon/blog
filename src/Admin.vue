@@ -94,10 +94,14 @@ export default {
     }
   },
   mounted() {
+    if (this.$store.state.loginInfo === null) {
+      //重定向到登录页
+      this.$router.push('/login');
+    }
     let vm = this;
     //刷新后重新激活导航
     vm.currentPath = this.$route.path;
-  }
+  },
 }
 </script>
 

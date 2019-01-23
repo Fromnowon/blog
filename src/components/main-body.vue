@@ -3,14 +3,16 @@
         <el-container>
             <el-aside
                     :style="{ marginLeft:isCollapse?'-300px':'0',transition:'margin 0.5s',textAlign:'unset',position:'fixed',zIndex:998,height:'100%'}">
-                <i class="el-icon-close menuBtn" style="top: 10px;right: 14px;font-size: 22px"
+                <i class="el-icon-close menuBtn" style="top: 10px;right: 14px;font-size: 22px;color: white"
                    @click="isCollapse=!isCollapse"></i>
                 <NavBar @closeMenu="isCollapse=true"></NavBar>
             </el-aside>
             <div style="width: 100%" @click="closeMenuByClick">
                 <el-header :style="{ top:headerShow?'0':'-70px',zIndex: 997 }">
                     <div style="max-width: 960px;margin: 0 auto;display: flex">
-                        <el-button style="height: 32px;align-self: center" round type="primary" size="small" @click.stop="isCollapse=!isCollapse">
+                        <el-button style="height: 32px;align-self: center" size="small"
+                                   @click.stop="isCollapse=!isCollapse" type="primary"
+                                   class="navBtn">
                             <i class="fa fa-navicon"></i>
                             &nbsp;菜单
                         </el-button>
@@ -27,27 +29,26 @@
                 <blog-footer></blog-footer>
             </div>
         </el-container>
+        <ToTop></ToTop>
     </div>
 </template>
 
 <script>
 import aboutMe from './about-me'
-import blogHeader from './header'
+import blogHeader from './login'
 import blogFooter from './footer'
 import NavBar from "./nav-bar";
+import ToTop from "./other/toTop";
 
 export default {
   name: "main_body",
   data() {
     return {
       isCollapse: true,//侧栏状态
-      controller: 1,
-      topicIMG: [require('../../static/images/topic/1.jpg'), require('../../static/images/topic/2.jpg'), require('../../static/images/topic/3.jpg')],
-      hottest: [],//点击最多
-      newest: [],//最新评论
       commentPreviewLength: 30,//评论预览长度
       scrollValue: 0,//滚动距离
       headerShow: true,//顶部显隐
+      topBtn: false,//回到顶部按钮
     }
   },
   watch: {
@@ -106,8 +107,10 @@ export default {
       //关闭侧栏
       if (!this.isCollapse) {
         this.isCollapse = true;
+        this.$util.getDomByClass('navBtn')[0].blur();
       }
       this.scrollValue = document.documentElement.scrollTop || document.body.scrollTop;
+      this.topBtn = !(this.scrollValue < 100);
     },
     closeMenuByClick() {
       //点击关闭侧栏
@@ -129,7 +132,8 @@ export default {
     NavBar,
     aboutMe,
     blogHeader,
-    blogFooter
+    blogFooter,
+    ToTop
   },
   activated() {
     //监听滚动
@@ -158,12 +162,11 @@ export default {
     }
 
     .el-header {
-        background-color: #B3C0D1;
-        color: #333;
+        background: white;
         line-height: 60px;
         position: fixed;
         width: 100%;
-        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.14);
+        box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.14);
         transition: top 0.5s;
     }
 
@@ -173,7 +176,7 @@ export default {
 
     .el-aside {
         border-right: 1px solid lightgrey;
-        background: white;
+        background: #545c64;
         color: #333;
         text-align: center;
         line-height: 200px;
@@ -199,6 +202,28 @@ export default {
 
     .el-container:nth-child(7) .el-aside {
         line-height: 320px;
+    }
+
+    .up {
+        background-color: #fff;
+        position: fixed;
+        right: 5%;
+        bottom: 10%;
+        width: 40px;
+        height: 40px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: .3s;
+        box-shadow: 0 0 6px rgba(0, 0, 0, .12);
+        z-index: 5
+    }
+
+    .up i {
+        color: #409eff;
+        display: block;
+        line-height: 40px;
+        text-align: center;
+        font-size: 18px;
     }
 
 
