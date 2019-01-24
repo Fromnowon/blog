@@ -2,8 +2,9 @@
     <div class="topic_item">
         <div v-for="(item,index) in list_arr" :key="index"
              style="margin-bottom: 20px;border-bottom: 1px solid lightgrey">
-            <div style="text-align: center;">
-                <span v-text="item.title" class="topic_item_title" @click="topic_detail(item.id)"></span>
+            <div style="display: flex;justify-content: center">
+                <span v-text="item.title" class="topic_item_title" style="align-self: center" @click="topic_detail(item.id)"></span>
+                <el-tag  style="align-self: center;margin-left: 10px" v-if="item.sticky==='1'" size="small" type="danger">置顶</el-tag>
             </div>
             <div class="topic_item_extra">
                 <span>浏览：{{ item.view }}</span>
@@ -17,7 +18,7 @@
                 <router-link :to="'view?id='+item.id" class="topic_preview" v-html="item.content_preview"></router-link>
             </div>
             <div style="text-align: center;margin-bottom: 40px">
-                <el-button size="small" type="info" @click="viewTopic('view?id='+item.id)">阅读全文</el-button>
+                <el-button size="small" round @click="viewTopic('view?id='+item.id)">阅读全文</el-button>
             </div>
         </div>
         <div>

@@ -19,7 +19,7 @@
                         <el-input size="small" suffix-icon="el-icon-search" placeholder="搜索"
                                   class="navSearch"
                                   @keydown.enter.native="onSearch"
-                                  :disabled="true" style="max-width: 200px;margin-left: auto">
+                                  style="max-width: 200px;margin-left: auto">
                         </el-input>
                     </div>
                 </el-header>
@@ -70,6 +70,14 @@ export default {
     }
   },
   mounted() {
+    //ie警告
+    if (!!window.ActiveXObject || "ActiveXObject" in window) {
+      this.$alert('您正在使用IE浏览器，可能会遇到兼容性问题', '注意', {
+        confirmButtonText: '好的',
+        type: 'error',
+        center: true
+      });
+    }
     //点击最多
     this.$axios(this.API + '/backend.php?action=pullHottest')
       .then(data => {
@@ -125,7 +133,11 @@ export default {
       console.log(key, keyPath);
     },
     onSearch() {
-
+      this.$alert('搜索功能暂未开放', '提示', {
+        confirmButtonText: '知道了',
+        type: 'warning',
+        center: true
+      });
     },
   },
   components: {

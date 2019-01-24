@@ -30,8 +30,7 @@ Vue.prototype.$nprogress = NProgress;
 
 
 Vue.prototype.CHAT = '/chat';
-//Vue.prototype.API = '';
-Vue.prototype.API = '/api';
+Vue.prototype.API = process.env.NODE_ENV === 'production' ? '' : '/api';
 
 NProgress.inc(0.2);
 NProgress.configure({easing: 'ease', speed: 500, showSpinner: false});

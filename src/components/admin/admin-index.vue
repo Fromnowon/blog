@@ -1,6 +1,6 @@
 <template>
-    <div>
-        这里是后台主页
+    <div class="content">
+        这里是后台首页
     </div>
 </template>
 
@@ -11,5 +11,4 @@ export default {
 </script>
 
 <style scoped>
-
 </style>

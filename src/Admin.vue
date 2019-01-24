@@ -5,51 +5,46 @@
                 :default-active="currentPath"
                 :collapse="isCollapse"
                 v-on:select="handleSelect"
-                :collapse-transition="false"
-                background-color="#545c64"
-                text-color="#fff"
-                active-text-color="#ffd04b"
+                :collapse-transition="true"
                 router>
             <div v-show="isCollapse" v-on:click="isCollapse=!isCollapse" class="left_menu_control">
-                <i class="fa fa-angle-double-right"></i>
+                <i class="fa fa-navicon"></i>
             </div>
             <div v-show="!isCollapse" v-on:click="isCollapse=!isCollapse" class="left_menu_control">
-                <i class="fa fa-angle-double-left"></i>
+                <i class="fa fa-close"></i>
             </div>
 
             <el-menu-item index="/">
-                <i class="el-icon-menu"></i>
-                <span slot="title">返回站点</span>
+                <i class="fa fa-location-arrow"></i>
+                <span slot="title">返回前台</span>
             </el-menu-item>
 
             <el-menu-item index="/admin">
-                <i class="el-icon-info"></i>
+                <i class="fa fa-info-circle"></i>
                 <span slot="title">后台主页</span>
             </el-menu-item>
             <el-submenu index="1">
                 <template slot="title">
-                    <i class="el-icon-location"></i>
+                    <i class="fa fa-gear"></i>
                     <span>管理</span>
                 </template>
                 <el-menu-item-group>
-                    <template slot="title">分组一</template>
-                    <el-menu-item index="1-1">选项1</el-menu-item>
-                    <el-menu-item index="1-2">选项2</el-menu-item>
+                    <template slot="title">内容管理</template>
+                    <el-menu-item index="/admin/verify">评论审核</el-menu-item>
+                    <el-menu-item index="1-2">屏蔽字</el-menu-item>
                 </el-menu-item-group>
-                <el-menu-item-group title="分组2">
-                    <el-menu-item index="1-3">选项3</el-menu-item>
+                <el-menu-item-group>
+                    <template slot="title">文章</template>
+                    <el-menu-item index="1-1">文章管理</el-menu-item>
+                    <el-menu-item index="1-1">编辑公告</el-menu-item>
                 </el-menu-item-group>
-                <el-submenu index="1-4">
-                    <template slot="title">选项4</template>
-                    <el-menu-item index="1-4-1">选项1</el-menu-item>
-                </el-submenu>
             </el-submenu>
             <el-menu-item index="/admin/edit">
-                <i class="el-icon-edit-outline"></i>
+                <i class="fa fa-edit"></i>
                 <span slot="title">新文章</span>
             </el-menu-item>
             <el-menu-item index="/admin/config">
-                <i class="el-icon-setting"></i>
+                <i class="fa fa-wrench"></i>
                 <span slot="title">设置</span>
             </el-menu-item>
         </el-menu>
@@ -106,6 +101,11 @@ export default {
 </script>
 
 <style scoped>
+    .el-menu {
+        border: 0;
+        box-shadow: 1px 0 1px lightgrey;
+    }
+
     .admin_div {
         overflow: hidden;
     }
@@ -120,12 +120,7 @@ export default {
 
     .left_menu_control > i {
         font-size: 20px;
-        color: #409EFF;
         align-self: center;
-    }
-
-    .left_menu_control:hover {
-        background: rgb(67, 74, 80);
     }
 
     .left_menu {
@@ -139,7 +134,14 @@ export default {
     }
 
     .right {
+        transition: margin-left 0.5s;
         margin-left: 65px;
+        padding: 20px;
+    }
+
+    .fa {
+        font-size: 18px;
+        margin: 0 5px;
     }
 
 </style>

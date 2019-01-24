@@ -6,7 +6,7 @@
                 <el-input style="width: 40%" size="medium" v-model="title"></el-input>
                 <p>分组：</p>
                 <el-dropdown trigger="click" @command="choose_group">
-                    <el-button>
+                    <el-button size="small">
                         <span v-text="group[group_choose]"></span>
                         <i class="el-icon-arrow-down el-icon--right"></i>
                     </el-button>
@@ -38,7 +38,7 @@
                             @blur="handleInputConfirm"
                     >
                     </el-input>
-                    <el-button v-else class="button-new-tag" type="info" size="small" @click="showInput" plain><i
+                    <el-button v-else class="button-new-tag" type="primary" plain size="small" @click="showInput" plain><i
                             class="fa fa-plus"></i>
                         添加
                     </el-button>
@@ -68,7 +68,7 @@
             </quill-editor>
         </div>
         <div class="submit_div">
-            <el-button type="success" @click="post_topic">提交</el-button>
+            <el-button type="primary" @click="post_topic" style="width: 120px">提交</el-button>
         </div>
     </div>
 </template>

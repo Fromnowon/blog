@@ -28,11 +28,16 @@ export default {
     });
     //实时存储窗口尺寸
     ['load', 'resize'].forEach(function (item, index) {
-      window.addEventListener(item, () => {
+      window.addEventListener(item, vm.$util.debounce(() => {
         vm.$store.commit('setSize', {height: window.innerHeight, width: window.innerWidth});
-
-      });
+      }, 500));
     });
+    //强制转换https
+    let protocol = document.location.protocol;
+    if (protocol === 'http:' && process.env.NODE_ENV === 'production') {
+      //转换为https
+      window.location.href = 'https' + window.location.href.substr(4, window.location.href.length);
+    }
   },
 }
 </script>

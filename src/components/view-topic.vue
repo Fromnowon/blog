@@ -36,11 +36,19 @@
                         <span>阅读量： {{ topic.view }}</span>
                     </div>
                 </div>
-                <div class="text item" style="margin: 30px 0 0">
+                <div style="margin: 30px 0 0">
                     <div class="ql-container ql-snow" style="border: 0">
                         <div class="ql-editor content" v-html="topic.content">
                         </div>
                     </div>
+                </div>
+                <div style="margin-top: 20px;text-align: center">
+                    <el-tooltip class="item" effect="dark" :content="lauded?'已点赞':'赞一下'" placement="top">
+                        <el-button :type="lauded?'primary':''" circle @click="laud" style="width: 40px;height: 40px"><i
+                                class="fa fa-thumbs-o-up"></i>
+                        </el-button>
+                    </el-tooltip>
+                    <span style="font-size: 14px">+{{ topic.laud }}</span>
                 </div>
             </div>
             <divider></divider>
@@ -56,7 +64,8 @@
                             <div v-for="(item,index) in commentsToShow"
                                  style="font-size: 14px;padding:10px;border-bottom: 1px solid whitesmoke">
                                 <div>
-                                    <span style="margin-right: 20px;font-weight: bold">{{ item.name }}</span>
+                                    <span style="margin-right: 20px;font-weight: bold"><i class="fa fa-user-circle"
+                                                                                          style="margin-right: 10px"></i>{{ item.name }}</span>
                                     <span style="color: darkgray">{{ commentsTotal-index-(commentsPageNUM-1)*perNUM }}楼</span>
                                     <div style="float: right;font-size: 12px;color: darkgray">
                                         发表于：{{ item.createDate}}
@@ -145,6 +154,7 @@ export default {
       isTitleVisible: true,//标题是否可见
       maxLength: 800,//评论最大长度
       isFull: false,//编辑器长度状态
+      lauded: false,//是否赞过
       group: {0: '默认', 1: '开发', 2: '分享', 3: '随笔', 4: '其他'},
       form: {
         name: '',
@@ -198,13 +208,22 @@ export default {
     }
   },
   methods: {
+    laud() {
+      //赞
+      if (this.lauded) {
+        return;
+      }
+      this.lauded = true;
+      this.$set(this.topic, 'laud', parseInt(this.topic.laud) + 1);
+      this.$axios(this.API + '/backend.php?action=laudHandler&id=' + this.$route.query.id);
+    },
     postComment() {
       animateScroll(this.$util.getDomByClass('postComment')[0], 128, -60);//上抬60像素
     },
-    scroll() {
+    scrollTopic() {
       //滚动监听
       let title = this.$util.getDomByClass('title')[0];
-      this.isTitleVisible = !(title.offsetTop + title.offsetHeight - document.documentElement.scrollTop - 60 < 0);
+      this.isTitleVisible = !(title.offsetTop + title.offsetHeight - (document.documentElement.scrollTop || document.body.scrollTop) - 60 < 0);
     },
     validate() {
       let nc_token = ["CF_APP_1", (new Date()).getTime(), Math.random()].join(':');
@@ -430,7 +449,7 @@ export default {
     this.validate();
     setTimeout(() => {
       //监听滚动，修正路由调整滚动条不触发滚动监听的bug
-      window.addEventListener('scroll', this.scroll, false);
+      window.addEventListener('scroll', this.scrollTopic, false);
     }, 0)
   },
   computed: {
@@ -439,7 +458,7 @@ export default {
     },
   },
   beforeRouteLeave(to, from, next) {
-    window.removeEventListener('scroll', this.scroll);
+    window.removeEventListener('scroll', this.scrollTopic);
     next();
   },
   components: {

@@ -10,6 +10,7 @@ import Chat from '../components/chat/main-chat'
 import View from '../components/view-topic'
 import Page404 from '../components/other/404'
 import Login from '../components/login'
+import Verify from '../components/admin/comments-verify'
 
 Vue.use(Router);
 
@@ -62,6 +63,10 @@ const router = new Router({
         {
           path: 'edit',
           component: Edit
+        },
+        {
+          path: 'verify',
+          component: Verify
         },
       ]
     },
