@@ -38,7 +38,7 @@
                             @blur="handleInputConfirm"
                     >
                     </el-input>
-                    <el-button v-else class="button-new-tag" type="primary" plain size="small" @click="showInput" plain><i
+                    <el-button v-else class="button-new-tag" type="primary" plain size="small" @click="showInput"><i
                             class="fa fa-plus"></i>
                         添加
                     </el-button>

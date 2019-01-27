@@ -28,11 +28,11 @@ const router = new Router({
       path: '/',
       redirect: '/index'
     },//重定向至首页路由
-    /////////////////////
     {
       path: '/404',
       component: Page404,
     },
+    /////////////////////
     {
       path: '/index',
       component: mainBody,

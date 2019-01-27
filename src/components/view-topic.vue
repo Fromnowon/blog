@@ -1,9 +1,10 @@
 <template>
     <div class="topic_content" style="background: white">
-        <div :class="['header',isTitleVisible?'header-visible':'header-invisible']">
+        <div :class="['header',isTitleVisible?'header-visible':'header-invisible',scrollValue===0?'header-top':'']">
             <div class="inner_item" style="display: flex;">
                 <div style="font-size: 24px;font-weight: bold;margin-right: 20px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;"
-                     :style="{ opacity:isTitleVisible?0:1 }">{{ topic.title }}
+                     :style="{ opacity:isTitleVisible?0:1 }">
+                    {{ topic.title }}
                 </div>
                 <div style="margin-left: auto;display: flex">
                     <el-button round size="small" style="height: 32px;align-self: center" icon="el-icon-edit"
@@ -62,7 +63,7 @@
                         <span v-if="comments.length===0">暂无</span>
                         <div v-else>
                             <div v-for="(item,index) in commentsToShow"
-                                 style="font-size: 14px;padding:10px;border-bottom: 1px solid whitesmoke">
+                                 style="font-size: 14px;margin-bottom: 30px;border-bottom: 1px solid whitesmoke">
                                 <div>
                                     <span style="margin-right: 20px;font-weight: bold"><i class="fa fa-user-circle"
                                                                                           style="margin-right: 10px"></i>{{ item.name }}</span>
@@ -71,7 +72,10 @@
                                         发表于：{{ item.createDate}}
                                     </div>
                                 </div>
-                                <div style="font-size: 14px" v-html="item.content"></div>
+                                <div class="ql-container ql-snow" style="border: 0;padding: 10px 0 20px">
+                                    <div class="ql-editor" style="font-size: 14px;" v-html="item.content">
+                                    </div>
+                                </div>
                             </div>
                             <div style="text-align: center;margin-top: 20px">
                                 <el-pagination
@@ -152,6 +156,7 @@ export default {
       loadingComment: true,//加载中
       loadingTopic: true,
       isTitleVisible: true,//标题是否可见
+      scrollValue: 0,//滚动距离
       maxLength: 800,//评论最大长度
       isFull: false,//编辑器长度状态
       lauded: false,//是否赞过
@@ -223,7 +228,8 @@ export default {
     scrollTopic() {
       //滚动监听
       let title = this.$util.getDomByClass('title')[0];
-      this.isTitleVisible = !(title.offsetTop + title.offsetHeight - (document.documentElement.scrollTop || document.body.scrollTop) - 60 < 0);
+      this.scrollValue = document.documentElement.scrollTop || document.body.scrollTop;
+      this.isTitleVisible = !(title.offsetTop + title.offsetHeight - this.scrollValue - 60 < 0);
     },
     validate() {
       let nc_token = ["CF_APP_1", (new Date()).getTime(), Math.random()].join(':');
@@ -514,18 +520,22 @@ function animateScroll(element, speed, patch) {
         line-height: 60px;;
         position: fixed;
         width: 100%;
-        z-index: 999;
+        z-index: 9999;
         background: white;
     }
 
     .header-visible {
         border-bottom: 0;
-        background: transparent;
+        box-shadow: 0 0 6px rgba(0, 0, 0, .12);
     }
 
     .header-invisible {
-        border-bottom: 1px solid #e0e0e0;
         background: white;
+        box-shadow: 0 0 6px rgba(0, 0, 0, .12);
+    }
+
+    .header-top {
+        box-shadow: 0 0 0 0 !important;
     }
 
     .inner_content {

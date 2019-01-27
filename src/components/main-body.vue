@@ -2,21 +2,23 @@
     <div class="main_content">
         <el-container>
             <el-aside
-                    :style="{ marginLeft:isCollapse?'-300px':'0',transition:'margin 0.5s',textAlign:'unset',position:'fixed',zIndex:998,height:'100%'}">
+                    :style="{ marginLeft:isCollapse?'-300px':'0',transition:'margin 0.5s',textAlign:'unset',position:'fixed',zIndex:9999,height:'100%'}">
                 <i class="el-icon-close menuBtn" style="top: 10px;right: 14px;font-size: 22px;color: white"
                    @click="isCollapse=!isCollapse"></i>
                 <NavBar @closeMenu="isCollapse=true"></NavBar>
             </el-aside>
             <div style="width: 100%" @click="closeMenuByClick">
-                <el-header :style="{ top:headerShow?'0':'-70px',zIndex: 997 }">
+                <el-header :style="{ top:headerShow?'0':'-70px',zIndex: 9998 }"
+                           :class="[ scrollValue===0?'header-top':'' ] ">
                     <div style="max-width: 960px;margin: 0 auto;display: flex">
                         <el-button style="height: 32px;align-self: center" size="small"
-                                   @click.stop="isCollapse=!isCollapse" type="primary"
-                                   class="navBtn">
+                                   @click.stop="isCollapse=!isCollapse"
+                                   round class="navBtn">
                             <i class="fa fa-navicon"></i>
                             &nbsp;菜单
                         </el-button>
                         <el-input size="small" suffix-icon="el-icon-search" placeholder="搜索"
+                                  disabled
                                   class="navSearch"
                                   @keydown.enter.native="onSearch"
                                   style="max-width: 200px;margin-left: auto">
@@ -168,7 +170,7 @@ export default {
     }
 
     .main_item {
-        padding-top: 80px;
+        padding-top: 120px;
         max-width: 1000px;
         margin: 0 auto;
     }
@@ -178,8 +180,12 @@ export default {
         line-height: 60px;
         position: fixed;
         width: 100%;
-        box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.14);
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.14);
         transition: top 0.5s;
+    }
+
+    .header-top {
+        box-shadow: 0 0 0 0 !important;
     }
 
     .navSearch >>> input {

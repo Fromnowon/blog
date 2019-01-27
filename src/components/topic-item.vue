@@ -1,26 +1,28 @@
 <template>
     <div class="topic_item">
-        <div v-for="(item,index) in list_arr" :key="index"
-             style="margin-bottom: 20px;border-bottom: 1px solid lightgrey">
-            <div style="display: flex;justify-content: center">
-                <span v-text="item.title" class="topic_item_title" style="align-self: center" @click="topic_detail(item.id)"></span>
-                <el-tag  style="align-self: center;margin-left: 10px" v-if="item.sticky==='1'" size="small" type="danger">置顶</el-tag>
+        <transition-group name="list">
+            <div v-for="(item,index) in list_arr" :key="index+'list'"
+                 style="margin-bottom: 20px;border-bottom: 1px solid lightgrey">
+                <div style="display: flex;justify-content: center">
+                    <span v-text="item.title" class="topic_item_title" style="align-self: center" @click="topic_detail(item.id)"></span>
+                    <el-tag  style="align-self: center;margin-left: 10px" v-if="item.sticky==='1'" size="small" type="danger">置顶</el-tag>
+                </div>
+                <div class="topic_item_extra">
+                    <span>浏览：{{ item.view }}</span>
+                    &nbsp;&nbsp;&nbsp;
+                    <span>评论：{{ item.reply }}</span>
+                    &nbsp;&nbsp;&nbsp;
+                    <span>发表于：</span>
+                    <span v-text="item.create_date"></span>
+                </div>
+                <div style="margin: 40px 0">
+                    <router-link :to="'view?id='+item.id" class="topic_preview" v-html="item.content_preview"></router-link>
+                </div>
+                <div style="text-align: center;margin-bottom: 40px">
+                    <el-button size="small" round @click="viewTopic('view?id='+item.id)">阅读全文</el-button>
+                </div>
             </div>
-            <div class="topic_item_extra">
-                <span>浏览：{{ item.view }}</span>
-                &nbsp;&nbsp;&nbsp;
-                <span>评论：{{ item.reply }}</span>
-                &nbsp;&nbsp;&nbsp;
-                <span>发表于：</span>
-                <span v-text="item.create_date"></span>
-            </div>
-            <div style="margin: 40px 0">
-                <router-link :to="'view?id='+item.id" class="topic_preview" v-html="item.content_preview"></router-link>
-            </div>
-            <div style="text-align: center;margin-bottom: 40px">
-                <el-button size="small" round @click="viewTopic('view?id='+item.id)">阅读全文</el-button>
-            </div>
-        </div>
+        </transition-group>
         <div>
             <el-pagination layout="prev, pager, next" :page-count="total_page_num" @current-change="change_page"
                            v-show="total_page_num"
@@ -100,6 +102,7 @@ export default {
 
 <style scoped>
     .topic_item {
+        overflow: hidden;
         min-height: 300px;
     }
 
@@ -114,6 +117,7 @@ export default {
         font-weight: bold;
         font-size: 20px;
         margin: 10px 0;
+        color: #409EFF;
     }
 
     .topic_item_title:hover {
@@ -124,6 +128,16 @@ export default {
         margin-top: 20px;
         text-align: center;
         font-size: 12px;
+    }
+
+    /*动画*/
+    .list-enter-active, .list-leave-active {
+        transition: all 1s ease;
+    }
+    .list-enter, .list-leave-to
+        /* .list-leave-active for below version 2.1.8 */ {
+        opacity: 0;
+        transform: translateY(30px);
     }
 
 </style>
