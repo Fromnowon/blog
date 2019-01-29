@@ -14,14 +14,13 @@
                 <i class="fa fa-close"></i>
             </div>
 
-            <el-menu-item index="/">
-                <i class="fa fa-location-arrow"></i>
-                <span slot="title">返回前台</span>
-            </el-menu-item>
-
             <el-menu-item index="/admin">
                 <i class="fa fa-info-circle"></i>
                 <span slot="title">后台主页</span>
+            </el-menu-item>
+            <el-menu-item index="/">
+                <i class="fa fa-location-arrow"></i>
+                <span slot="title">返回前台</span>
             </el-menu-item>
             <el-submenu index="1">
                 <template slot="title">
@@ -35,11 +34,11 @@
                 </el-menu-item-group>
                 <el-menu-item-group>
                     <template slot="title">文章</template>
-                    <el-menu-item index="1-1">文章管理</el-menu-item>
+                    <el-menu-item index="/admin/topic_manage">文章管理</el-menu-item>
                     <el-menu-item index="1-1">编辑公告</el-menu-item>
                 </el-menu-item-group>
             </el-submenu>
-            <el-menu-item index="/admin/edit">
+            <el-menu-item index="/admin/new">
                 <i class="fa fa-edit"></i>
                 <span slot="title">新文章</span>
             </el-menu-item>
@@ -104,6 +103,7 @@ export default {
     .el-menu {
         border: 0;
         box-shadow: 1px 0 1px lightgrey;
+        z-index: 999;
     }
 
     .admin_div {
@@ -136,7 +136,6 @@ export default {
     .right {
         transition: margin-left 0.5s;
         margin-left: 65px;
-        padding: 20px;
     }
 
     .fa {

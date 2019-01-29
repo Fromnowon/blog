@@ -35,6 +35,10 @@
                     <div class="info">
                         <span style="margin-right: 20px">作者：{{ topic.author }}</span>
                         <span>阅读量： {{ topic.view }}</span>
+                        <div style="margin-top: 10px;text-align: center;font-size: 12px;color: black;"
+                             v-if="topic.edit_date!==null">
+                            {{ '本文更新于：'+topic.edit_date}}
+                        </div>
                     </div>
                 </div>
                 <div style="margin: 30px 0 0">
@@ -53,7 +57,7 @@
                 </div>
             </div>
             <divider></divider>
-            <div style="position: relative;padding: 40px 10px">
+            <div style="padding: 40px 10px">
                 <div class="inner_item">
                     <div class="comment-title">
                         <span style="font-size: 18px">评论：</span>
@@ -160,6 +164,7 @@ export default {
       maxLength: 800,//评论最大长度
       isFull: false,//编辑器长度状态
       lauded: false,//是否赞过
+      isFromIndex: '',//是否从主页跳转而来
       group: {0: '默认', 1: '开发', 2: '分享', 3: '随笔', 4: '其他'},
       form: {
         name: '',
@@ -223,7 +228,8 @@ export default {
       this.$axios(this.API + '/backend.php?action=laudHandler&id=' + this.$route.query.id);
     },
     postComment() {
-      animateScroll(this.$util.getDomByClass('postComment')[0], 128, -60);//上抬60像素
+      let obj = this.$util.getDomByClass('postComment')[0];
+      window.scrollTo(0, obj.offsetTop + obj.offsetHeight);
     },
     scrollTopic() {
       //滚动监听
@@ -292,8 +298,8 @@ export default {
           if (this.$store.state.userInfo !== null) {
             //此用户存存在发言记录
             let time = new Date().getTime() / 1000 - this.$store.state.userInfo.time / 1000;
-            console.log('间隔秒数：' + time);
-            if (time < 1) {
+            console.log('间隔秒数：' + Math.floor(time));
+            if (time < 180) {
               this.$message.error('距离上次发言不足3分钟，请等待');
               return;
             }
@@ -313,9 +319,7 @@ export default {
               content: this.content,
               captcha: this.captchaInput,
             };
-            this.$axios(this.API + '/backend.php?action=postComment', {
-              params: param
-            })
+            this.$axios.post(this.API + '/backend.php?action=postComment', Qs.stringify(param))
               .then(data => {
                 this.postLoading = false;
                 switch (data.data.status) {
@@ -331,13 +335,15 @@ export default {
                   case 1: {
                     this.$notify.success({
                       title: '成功',
-                      message: '你发表了评论'
+                      message: '你发表了评论',
                     });
                     //拉取评论
                     this.pullComments();
                     setTimeout(() => {
                       //定位到评论
-                      animateScroll(this.$util.getDomByClass('comment-title')[0], 64, -60);
+                      //animateScroll(this.$util.getDomByClass('comment-title')[0], 64, -60);
+                      let obj = this.$util.getDomByClass('comment-title')[0];
+                      window.scrollTo(0, obj.offsetTop - obj.offsetHeight - 60);
                     }, 1000);
                     break;
                   }
@@ -364,7 +370,7 @@ export default {
           } else {
             this.$notify.error({
               title: '错误',
-              message: '评论内容不能为空'
+              message: '评论内容不能为空',
             });
           }
 
@@ -374,7 +380,12 @@ export default {
       });
     },
     go_back() {
-      this.$router.go(-1);
+      //若无缓存，则直接进入主页
+      if (this.isFromIndex) {
+        this.$router.go(-1);
+      } else {
+        this.$router.push('/index');
+      }
     },
     onEditorChange({quill, html, text}) {
       this.content_text = text;
@@ -463,6 +474,11 @@ export default {
       return this.$refs.myQuillEditor.quill;
     },
   },
+  beforeRouteEnter(to, from, next) {
+    next(vm => {
+      vm.isFromIndex = from.path === '/index';
+    });
+  },
   beforeRouteLeave(to, from, next) {
     window.removeEventListener('scroll', this.scrollTopic);
     next();
@@ -491,37 +507,21 @@ function randomWord(randomFlag, min, max) {
   return str;
 }
 
-function animateScroll(element, speed, patch) {
-  let rect = element.getBoundingClientRect();
-  //获取元素相对窗口的top值，此处应加上窗口本身的偏移
-  let top = window.pageYOffset + rect.top + patch;
-  let currentTop = 0;
-  let requestId;
-
-  //采用requestAnimationFrame，平滑动画
-  function step(timestamp) {
-    currentTop += speed;
-    if (currentTop <= top) {
-      window.scrollTo(0, currentTop);
-      requestId = window.requestAnimationFrame(step);
-    } else {
-      window.cancelAnimationFrame(requestId);
-    }
-  }
-
-  window.requestAnimationFrame(step);
-}
-
 </script>
 
 <style scoped>
+
     .header {
         height: 60px;
         line-height: 60px;;
         position: fixed;
         width: 100%;
-        z-index: 9999;
+        z-index: 1000;
         background: white;
+    }
+
+    .topic_content >>> .el-loading-mask {
+        z-index: 999 !important;
     }
 
     .header-visible {

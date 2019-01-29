@@ -80,36 +80,6 @@ export default {
         center: true
       });
     }
-    //点击最多
-    this.$axios(this.API + '/backend.php?action=pullHottest')
-      .then(data => {
-        if (data.data.status !== -1) {
-          this.hottest = data.data.msg;
-        } else {
-          console.log(data.data.msg);
-        }
-      })
-      .catch(error => {
-        console.log(error);
-      });
-    //最新评论
-    this.$axios(this.API + '/backend.php?action=pullNewsComments')
-      .then(data => {
-        if (data.data.status !== -1) {
-          for (let i = 0, len = data.data.msg.length; i < len; i++) {
-            data.data.msg[i].content = this.$util.HTMLEncode(data.data.msg[i].content);
-            if (data.data.msg[i].content.length > this.commentPreviewLength) {
-              data.data.msg[i].content = data.data.msg[i].content.substr(0, this.commentPreviewLength) + '...';
-            }
-          }
-          this.newest = data.data.msg;
-        } else {
-          console.log(data.data.msg);
-        }
-      })
-      .catch(error => {
-        console.log(error);
-      });
   },
   methods: {
     scroll() {

@@ -57,17 +57,6 @@ util.removeClass = function (ele, cls) {
     ele.className = ele.className.replace(reg, " ");
   }
 };
-util.HTMLEncode = function (html) {
-  const WIDTH = 200;
-  let temp = document.createElement("div");
-  temp.innerHTML = html;
-  let output = temp.innerText || temp.textContent;
-  temp = null;
-  if (output.length > WIDTH) {
-    output = output.substring(0, WIDTH) + '...';
-  }
-  return output;
-};
 util.debounce = function (fn, delay) {
   // 维护一个 timer
   let timer = null;

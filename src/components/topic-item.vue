@@ -4,8 +4,11 @@
             <div v-for="(item,index) in list_arr" :key="index+'list'"
                  style="margin-bottom: 20px;border-bottom: 1px solid lightgrey">
                 <div style="display: flex;justify-content: center">
-                    <span v-text="item.title" class="topic_item_title" style="align-self: center" @click="topic_detail(item.id)"></span>
-                    <el-tag  style="align-self: center;margin-left: 10px" v-if="item.sticky==='1'" size="small" type="danger">置顶</el-tag>
+                    <span v-text="item.title" class="topic_item_title" style="align-self: center"
+                          @click="topic_detail(item.id)"></span>
+                    <el-tag style="align-self: center;margin-left: 10px" v-if="item.sticky==='1'" size="small"
+                            type="danger">置顶
+                    </el-tag>
                 </div>
                 <div class="topic_item_extra">
                     <span>浏览：{{ item.view }}</span>
@@ -16,7 +19,8 @@
                     <span v-text="item.create_date"></span>
                 </div>
                 <div style="margin: 40px 0">
-                    <router-link :to="'view?id='+item.id" class="topic_preview" v-html="item.content_preview"></router-link>
+                    <router-link :to="'view?id='+item.id" class="topic_preview"
+                                 v-text="item.content_preview"></router-link>
                 </div>
                 <div style="text-align: center;margin-bottom: 40px">
                     <el-button size="small" round @click="viewTopic('view?id='+item.id)">阅读全文</el-button>
@@ -67,7 +71,7 @@ export default {
         .then(function (res) {
           vm.list_arr = [];
           for (let item of res.data.arr) {
-            item['content_preview'] = vm.$util.HTMLEncode(item.content);
+            item['content_preview'] = item.content.replace(/<[^<>]+>/g, '').substring(0, 320);
             vm.list_arr.push(item);
           }
           vm.$store.commit('loadingControl', 0);
@@ -87,7 +91,7 @@ export default {
       .then(function (res) {
         vm.total_page_num = Math.ceil(parseInt(res.data.total) / PAGE_NUM);
         for (let item of res.data.arr) {
-          item['content_preview'] = vm.$util.HTMLEncode(item.content);
+          item['content_preview'] = item.content.replace(/<[^<>]+>/g, '').substring(0, 320);
           vm.list_arr.push(item);
         }
         //vm.$store.commit('loadingControl', 0);
@@ -96,7 +100,7 @@ export default {
       .catch(function (error) {
         console.log(error);
       })
-  }
+  },
 }
 </script>
 
@@ -132,10 +136,12 @@ export default {
 
     /*动画*/
     .list-enter-active, .list-leave-active {
-        transition: all 1s ease;
+        transition: all 0.5s ease;
     }
+
     .list-enter, .list-leave-to
-        /* .list-leave-active for below version 2.1.8 */ {
+        /* .list-leave-active for below version 2.1.8 */
+    {
         opacity: 0;
         transform: translateY(30px);
     }

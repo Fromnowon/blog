@@ -4,6 +4,7 @@ import mainBody from '../components/main-body'
 import indexList from '../components/index-list'
 import About from '../components/about-me'
 import Admin from '../Admin'
+import New from '../components/admin/edit-topic'
 import Edit from '../components/admin/edit-topic'
 import adminIndex from '../components/admin/admin-index'
 import Chat from '../components/chat/main-chat'
@@ -11,6 +12,7 @@ import View from '../components/view-topic'
 import Page404 from '../components/other/404'
 import Login from '../components/login'
 import Verify from '../components/admin/comments-verify'
+import TopicManage from '../components/admin/topics-manage'
 
 Vue.use(Router);
 
@@ -61,12 +63,20 @@ const router = new Router({
           component: adminIndex
         },
         {
+          path: 'new',
+          component: New
+        },
+        {
           path: 'edit',
           component: Edit
         },
         {
           path: 'verify',
           component: Verify
+        },
+        {
+          path: 'topic_manage',
+          component: TopicManage
         },
       ]
     },

@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <keep-alive exclude="view-topic,edit-topic,Admin">
+        <keep-alive exclude="view-topic,edit-topic">
             <router-view class="router"/>
         </keep-alive>
     </div>
@@ -43,28 +43,20 @@ export default {
         /*background: #f5f6f7;*/
     }
 
-    .el-card {
-        border-radius: 0 !important;
-    }
-
-    .el-dialog {
-        min-width: 300px;
-    }
-
-    .ql-toolbar {
-        background: white;
-    }
-
     .ql-editor {
         background: white;
     }
 
     #nprogress .bar {
-        z-index: 999;
+        z-index: 9999;
     }
 
     .hidden {
         display: none;
+    }
+
+    .el-loading-mask {
+        background-color: white !important;
     }
 
 </style>

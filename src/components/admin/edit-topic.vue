@@ -2,6 +2,19 @@
     <div class="edit_div">
         <div class="info">
             <div>
+                <div v-if="mode===1">
+                    <el-alert
+                            title="当前处于编辑文章模式"
+                            type="warning">
+                    </el-alert>
+                    <el-button size="small" style="margin-top: 20px" @click="back"><i class="fa fa-chevron-left"></i> 返回
+                    </el-button>
+                </div>
+                <el-alert
+                        v-else
+                        title="当前处于新建文章模式"
+                        type="success">
+                </el-alert>
                 <p>标题：</p>
                 <el-input style="width: 40%" size="medium" v-model="title"></el-input>
                 <p>分组：</p>
@@ -67,8 +80,16 @@
                     @change="onEditorChange($event)">
             </quill-editor>
         </div>
+        <div class="settings">
+            <h4>设置：</h4>
+            <template>
+                <!-- `checked` 为 true 或 false -->
+                <el-checkbox v-model="public">公开</el-checkbox>
+                <el-checkbox v-model="sticky">置顶</el-checkbox>
+            </template>
+        </div>
         <div class="submit_div">
-            <el-button type="primary" @click="post_topic" style="width: 120px">提交</el-button>
+            <el-button type="primary" @click="post_topic" style="width: 120px">{{ mode===0?'发布':'修改' }}</el-button>
         </div>
     </div>
 </template>
@@ -84,7 +105,7 @@ import Qs from 'qs'
 Quill.register('modules/imageResize', ImageResize);
 
 export default {
-  name: "edit-topic",
+  name: "new-topic",
   data() {
     return {
       serverUrl: this.API + '/backend.php?action=quillUploadImg',
@@ -93,6 +114,7 @@ export default {
         modules: {
           toolbar: {
             container: [
+              [{'header': [1, 2, 3, 4, 5, 6, false]}],
               [{'size': []},
                 'bold', 'italic', 'underline', 'strike',
                 {'background': []}, {'color': []}],
@@ -126,33 +148,55 @@ export default {
       dynamicTags: [],//标签
       group: {0: '默认', 1: '开发', 2: '分享', 3: '随笔', 4: '其他'},
       group_choose: 0,
+      public: true,
+      sticky: false,
       inputVisible: false,
       inputValue: '',
       quillUploadImg: false,
+      mode: 0,//默认新建模式,
     }
   },
   methods: {
+    back() {
+      this.$router.go(-1);
+    },
     post_topic() {
       let data = {
-        author: sessionStorage.getItem('LoggedIn'),
+        author: this.$store.state.loginInfo,
         title: this.title,
         grouping: this.group_choose,
         tags: this.dynamicTags,
-        content: this.content
+        content: this.content,
+        public: this.public ? 1 : 0,
+        sticky: this.sticky ? 1 : 0,
       };
-      console.log(data);
       if (!data.title.length || !data.content.length) {
         this.$message.error('内容不完整，请检查');
         return;
       }
-      this.$axios(this.API + '/backend.php?action=new_topic', {
-        params: data
-      })
+      let url = this.mode === 0 ? this.API + '/backend.php?action=new_topic' : this.API + '/backend.php?action=editTopic&&id=' + this.$route.query.topic.id;
+      this.$axios.post(url, Qs.stringify(data))
         .then(res => {
-          console.log(res.data);
+          console.log(res);
+          if (res.data.status === 1) {
+            this.$notify({
+              title: '成功',
+              message: '提交成功',
+              type: 'success'
+            });
+          } else {
+            this.$notify.error({
+              title: '错误',
+              message: '请查看log',
+            });
+          }
         })
         .catch(error => {
-          console.log(error.data);
+          this.$notify.error({
+            title: '错误',
+            message: '请查看log',
+          });
+          console.log(error);
         })
     },
     choose_group(command) {
@@ -230,17 +274,64 @@ export default {
       }
       this.inputVisible = false;
       this.inputValue = '';
-    }
+    },
+    getData() {
+      //取参数
+      try {
+        if (this.$route.query.mode === 'edit') {
+          //验证数据
+          if (this.$route.query.topic.id === undefined || this.$route.query.topic.grouping === undefined || this.$route.query.topic.content === undefined) {
+            this.$message({
+              message: '数据异常，将进入新建文章模式',
+              type: 'error'
+            });
+            setTimeout(_ => {
+              this.$router.push('/admin/edit');
+            }, 1000)
+          }
+          //编辑模式
+          this.mode = 1;
+          //填充数据
+          let data = this.$route.query.topic;
+          this.title = data.title;
+          this.group_choose = data.grouping;
+          this.content = data.content;
+          this.dynamicTags = JSON.parse(data.tags);
+          this.public = data.public === '1';
+          this.sticky = data.sticky === '1';
+        } else {
+          //新文章模式
+          this.mode = 0;
+          //初始化数据
+          this.title = '';
+          this.group_choose = 0;
+          this.content = '';
+          this.dynamicTags = [];
+          this.public = true;
+          this.sticky = false;
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    },
   },
   computed: {
     editor() {
       return this.$refs.myQuillEditor.quill;
     }
   },
+  watch: {
+    '$route': function (to, from) {
+
+      this.getData();
+    }
+  },
   mounted() {
     let vm = this;
     vm.editor.container.style.height = window.innerHeight * 0.8 + 'px';
     vm.editor.container.style.width = '100%';
+    //调用
+    this.getData();
   },
   components: {
     quillEditor
@@ -250,7 +341,7 @@ export default {
 
 <style scoped>
     .edit_div {
-        padding: 0 20px;
+        padding: 20px;
     }
 
     .group {
@@ -280,12 +371,20 @@ export default {
         vertical-align: bottom;
     }
 
+    .settings {
+        margin: 20px 0;
+    }
+
     .submit_div {
         text-align: right;
-        margin: 20px 0 40px;
+        margin: 20px 0;
     }
 
     .image_uploader {
         display: none;
+    }
+
+    .editor >>> .ql-toolbar {
+        background: whitesmoke;
     }
 </style>
