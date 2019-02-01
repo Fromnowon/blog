@@ -18,7 +18,8 @@
                             &nbsp;菜单
                         </el-button>
                         <el-input size="small" suffix-icon="el-icon-search" placeholder="搜索"
-                                  disabled
+                                  v-model="searchKey"
+                                  :maxlength="16"
                                   class="navSearch"
                                   @keydown.enter.native="onSearch"
                                   style="max-width: 200px;margin-left: auto">
@@ -41,6 +42,7 @@ import blogHeader from './login'
 import blogFooter from './footer'
 import NavBar from "./nav-bar";
 import ToTop from "./other/toTop";
+import Category from "./category-page";
 
 export default {
   name: "main_body",
@@ -51,6 +53,7 @@ export default {
       scrollValue: 0,//滚动距离
       headerShow: true,//顶部显隐
       topBtn: false,//回到顶部按钮
+      searchKey: '',//搜索关键词
     }
   },
   watch: {
@@ -69,7 +72,7 @@ export default {
           this.headerShow = false;
         }
       }
-    }
+    },
   },
   mounted() {
     //ie警告
@@ -98,18 +101,8 @@ export default {
         this.isCollapse = true;
       }
     },
-    handleOpen(key, keyPath) {
-      console.log(key, keyPath);
-    },
-    handleClose(key, keyPath) {
-      console.log(key, keyPath);
-    },
     onSearch() {
-      this.$alert('搜索功能暂未开放', '提示', {
-        confirmButtonText: '知道了',
-        type: 'warning',
-        center: true
-      });
+      this.$router.push({path: '/search', query: {keyWord: this.searchKey}});
     },
   },
   components: {
@@ -117,7 +110,8 @@ export default {
     aboutMe,
     blogHeader,
     blogFooter,
-    ToTop
+    ToTop,
+    Category
   },
   activated() {
     //监听滚动
@@ -125,6 +119,7 @@ export default {
   },
   beforeRouteLeave(to, from, next) {
     window.removeEventListener('scroll', this.scroll);
+    this.searchKey = '';
     next();
   }
 }

@@ -13,6 +13,8 @@ import Page404 from '../components/other/404'
 import Login from '../components/login'
 import Verify from '../components/admin/comments-verify'
 import TopicManage from '../components/admin/topics-manage'
+import Category from '../components/category-page'
+import Search from '../components/search-page'
 
 Vue.use(Router);
 
@@ -50,6 +52,10 @@ const router = new Router({
         {
           path: 'chat',
           component: Chat
+        },
+        {
+          path: 'category',
+          component: Category,
         },
       ]
     },
@@ -92,6 +98,10 @@ const router = new Router({
     {
       path: '/login',
       component: Login,
+    },
+    {
+      path: '/search',
+      component: Search,
     },
   ]
 });

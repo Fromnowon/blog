@@ -8,17 +8,17 @@
                 <el-form-item label="用户名" prop="username"
                               v-bind:rules="login_rules">
                     <el-input ref="username_input" v-model="loginInfo.username"
-                              v-on:keyup.enter.native="switch_to" clearable v-bind:disabled="loggingIn"></el-input>
+                              v-on:keyup.enter.native="switch_to" clearable></el-input>
                 </el-form-item>
                 <el-form-item label="密码" prop="password"
                               v-bind:rules="login_rules">
                     <el-input ref="password_input" type="password"
                               v-model="loginInfo.password"
-                              v-on:keyup.enter.native="login" clearable v-bind:disabled="loggingIn"></el-input>
+                              v-on:keyup.enter.native="login" clearable></el-input>
                 </el-form-item>
                 <el-form-item>
                     <el-button @click="goIndex" type="danger">返 回</el-button>
-                    <el-button type="primary" v-on:click="login" v-bind:loading="loggingIn">登 录</el-button>
+                    <el-button type="primary" @:click="login" @:loading="loggingIn">登 录</el-button>
                 </el-form-item>
             </el-form>
         </div>
@@ -26,6 +26,7 @@
 </template>
 
 <script>
+import md5 from 'js-md5'
 
 export default {
   name: "login",
@@ -37,23 +38,14 @@ export default {
         password: '',
       },
       loggingIn: false,
-      isLoggedIn: {
-        state: 0,
-        username: ''
-      },
     }
   },
   methods: {
-    goIndex(){
+    goIndex() {
       this.$router.push('/index');
     },
     set_focus() {
       this.$refs['username_input'].focus();
-    },
-    logout() {
-      this.isLoggedIn.state = 0;
-      this.isLoggedIn.username = '';
-      sessionStorage.removeItem('LoggedIn');
     },
     login() {
       let vm = this;
@@ -70,20 +62,24 @@ export default {
             .then(data => {
               if (data.data == 'PASS') {
                 //登录成功
-                vm.$store.commit('setLoginInfo', this.loginInfo.username);
+                vm.loggingIn = false;
+                vm.$store.commit('setLoginInfo', {
+                  username: this.loginInfo.username,
+                  password: md5(this.loginInfo.password)
+                });
                 vm.$router.push('/admin');
               } else {
                 //登录失败
-                vm.$message.error('用户名或密码错误！');
                 vm.loggingIn = false;
+                vm.$message.error('用户名或密码错误！');
                 setTimeout(function () {
                   vm.$refs['username_input'].focus();
                 }, 500);
               }
             })
             .catch(error => {
-              alert('无法连接到服务器');
               vm.loggingIn = false;
+              alert('无法连接到服务器');
               console.log(error);
             })
         } else {
@@ -95,18 +91,17 @@ export default {
       this.$refs['password_input'].focus();
     }
   },
-  beforeCreate() {
+  activated() {
+    //应取数据向服务器验证
     if (this.$store.state.loginInfo !== null) {
       //重定向到登录页
       this.$router.push('/admin');
+    } else {
+      console.log('登录信息为空');
     }
   },
   mounted() {
-    if (sessionStorage.getItem('LoggedIn') != null) {
-      //已经登录
-      this.isLoggedIn.state = 1;
-      this.isLoggedIn.username = sessionStorage.getItem('LoggedIn');
-    }
+
   },
 }
 </script>

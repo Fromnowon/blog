@@ -87,9 +87,10 @@ export default {
       }
     }
   },
-  mounted() {
+  activated() {
     if (this.$store.state.loginInfo === null) {
       //重定向到登录页
+      console.log(this.$store.state.loginInfo);
       this.$router.push('/login');
     }
     let vm = this;

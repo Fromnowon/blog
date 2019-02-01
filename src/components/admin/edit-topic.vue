@@ -322,7 +322,6 @@ export default {
   },
   watch: {
     '$route': function (to, from) {
-
       this.getData();
     }
   },

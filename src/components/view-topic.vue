@@ -41,7 +41,7 @@
                         </div>
                     </div>
                 </div>
-                <div style="margin: 30px 0 0">
+                <div style="margin: 30px 0 0" @click="imgClick">
                     <div class="ql-container ql-snow" style="border: 0">
                         <div class="ql-editor content" v-html="topic.content">
                         </div>
@@ -131,6 +131,13 @@
             </div>
         </div>
         <ToTop></ToTop>
+        <el-dialog
+                :visible.sync="dialogVisible"
+                width="80%">
+            <div style="text-align: center;margin-bottom: 20px">
+                <img :src="dialogImg" style="width: 90%;" />
+            </div>
+        </el-dialog>
     </div>
 </template>
 
@@ -164,7 +171,10 @@ export default {
       maxLength: 800,//评论最大长度
       isFull: false,//编辑器长度状态
       lauded: false,//是否赞过
-      isFromIndex: '',//是否从主页跳转而来
+      hasCache: '',//是否存在路由历史
+      dialogVisible: false,//图片对话框
+      dialogImg: '',
+      imgScaleValue: 0,//图片放大
       group: {0: '默认', 1: '开发', 2: '分享', 3: '随笔', 4: '其他'},
       form: {
         name: '',
@@ -218,6 +228,13 @@ export default {
     }
   },
   methods: {
+    imgClick($event) {
+      if ($event.target.tagName.toUpperCase() === 'IMG') {
+        // 点击了图片
+        this.dialogVisible = true;
+        this.dialogImg = $event.target.src;
+      }
+    },
     laud() {
       //赞
       if (this.lauded) {
@@ -381,7 +398,7 @@ export default {
     },
     go_back() {
       //若无缓存，则直接进入主页
-      if (this.isFromIndex) {
+      if (this.hasCache) {
         this.$router.go(-1);
       } else {
         this.$router.push('/index');
@@ -476,7 +493,7 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     next(vm => {
-      vm.isFromIndex = from.path === '/index';
+      vm.hasCache = from.path !== '/';
     });
   },
   beforeRouteLeave(to, from, next) {
@@ -567,10 +584,12 @@ function randomWord(randomFlag, min, max) {
 
     .content >>> img {
         max-width: 100%;
+        cursor: pointer;
     }
 
     .ql-container {
         padding: 10px 0;
+        font-size: 14px;
     }
 
     .el-form-item {
