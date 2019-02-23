@@ -2,7 +2,7 @@
     <div class="main_content">
         <el-container>
             <el-aside
-                    :style="{ marginLeft:isCollapse?'-300px':'0',transition:'margin 0.5s',textAlign:'unset',position:'fixed',zIndex:9999,height:'100%'}">
+                    :style="{ marginLeft:isCollapse?'-320px':'0',transition:'margin 0.5s',textAlign:'unset',position:'fixed',zIndex:9999,height:'100%'}">
                 <i class="el-icon-close menuBtn" style="top: 10px;right: 14px;font-size: 22px;color: white"
                    @click="isCollapse=!isCollapse"></i>
                 <NavBar @closeMenu="isCollapse=true"></NavBar>
@@ -158,7 +158,7 @@ export default {
     }
 
     .el-aside {
-        border-right: 1px solid lightgrey;
+        box-shadow: 0 1px 3px grey;
         background: #545c64;
         color: #333;
         text-align: center;

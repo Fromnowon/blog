@@ -8,10 +8,10 @@
                 :collapse-transition="true"
                 router>
             <div v-show="isCollapse" v-on:click="isCollapse=!isCollapse" class="left_menu_control">
-                <i class="fa fa-navicon"></i>
+                <i class="fa fa-angle-double-right"></i>
             </div>
             <div v-show="!isCollapse" v-on:click="isCollapse=!isCollapse" class="left_menu_control">
-                <i class="fa fa-close"></i>
+                <i class="fa fa-angle-double-left"></i>
             </div>
 
             <el-menu-item index="/admin">
@@ -19,7 +19,7 @@
                 <span slot="title">后台主页</span>
             </el-menu-item>
             <el-menu-item index="/">
-                <i class="fa fa-location-arrow"></i>
+                <i class="fa fa-home"></i>
                 <span slot="title">返回前台</span>
             </el-menu-item>
             <el-submenu index="1">

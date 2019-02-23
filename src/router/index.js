@@ -7,7 +7,6 @@ import Admin from '../Admin'
 import New from '../components/admin/edit-topic'
 import Edit from '../components/admin/edit-topic'
 import adminIndex from '../components/admin/admin-index'
-import Chat from '../components/chat/main-chat'
 import View from '../components/view-topic'
 import Page404 from '../components/other/404'
 import Login from '../components/login'
@@ -48,10 +47,6 @@ const router = new Router({
         {
           path: 'about',
           component: About
-        },
-        {
-          path: 'chat',
-          component: Chat
         },
         {
           path: 'category',
