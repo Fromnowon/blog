@@ -21,9 +21,10 @@ export default {
 
 <style scoped>
     .footer {
+        position: relative;
+        z-index: 999;
         background: #394149;
     }
-
     .content {
         padding: 20px 0;
         text-align: center;

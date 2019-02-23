@@ -8,12 +8,14 @@
                 <NavBar @closeMenu="isCollapse=true"></NavBar>
             </el-aside>
             <div style="width: 100%" @click="closeMenuByClick">
-                <el-header :style="{ top:headerShow?'0':'-70px',zIndex: 9998 }"
-                           :class="[ scrollValue===0?'header-top':'' ] ">
+                <el-header :style="{ top:headerShow?'0':'-70px'}"
+                           style="z-index: 9998"
+                           :class="[ scrollValue<headerHeight?'header-top':'' ] ">
                     <div style="max-width: 960px;margin: 0 auto;display: flex">
                         <el-button style="height: 32px;align-self: center" size="small"
                                    @click.stop="isCollapse=!isCollapse"
-                                   round class="navBtn">
+                                   type="primary"
+                                   class="navBtn">
                             <i class="fa fa-navicon"></i>
                             &nbsp;菜单
                         </el-button>
@@ -26,6 +28,20 @@
                         </el-input>
                     </div>
                 </el-header>
+                <div style="position: absolute;z-index: 999;color: white;width: 100%;text-align: center"
+                     :style="{top:headerHeight*0.3+'px'}"
+                >
+                    <span style="font-size: 1.5em">{{ oneText.content }}</span>
+                    <i class="fa fa-refresh "></i>
+                    <div>
+                        <br>
+                        <span>《{{ oneText.origin.title }}》{{ oneText.origin.author }}</span>
+                    </div>
+
+                </div>
+                <div style="position: fixed;top: 0;width: 100%;z-index: 998">
+                    <img src="../../static/images/header.jpg" class="header_bg" alt="bg" style="width: 100%;">
+                </div>
                 <el-main class="main_item">
                     <router-view style="min-height: 640px"></router-view>
                 </el-main>
@@ -37,92 +53,115 @@
 </template>
 
 <script>
-import aboutMe from './about-me'
-import blogHeader from './login'
-import blogFooter from './footer'
-import NavBar from "./nav-bar";
-import ToTop from "./other/toTop";
-import Category from "./category-page";
+    import aboutMe from './about-me'
+    import blogHeader from './login'
+    import blogFooter from './footer'
+    import NavBar from "./nav-bar";
+    import ToTop from "./other/toTop";
+    import Category from "./category-page";
 
-export default {
-  name: "main_body",
-  data() {
-    return {
-      isCollapse: true,//侧栏状态
-      commentPreviewLength: 30,//评论预览长度
-      scrollValue: 0,//滚动距离
-      headerShow: true,//顶部显隐
-      topBtn: false,//回到顶部按钮
-      searchKey: '',//搜索关键词
-    }
-  },
-  watch: {
-    $route(to, from) {
-      if (from.path === '/admin') {
-        this.$forceUpdate();
-      }
-    },
-    scrollValue(newValue, oldValue) {
-      if (oldValue > newValue) {
-        //上滚
-        this.headerShow = true;
-      } else {
-        //下滚
-        if (newValue > 70) {
-          this.headerShow = false;
+    export default {
+        name: "main_body",
+        data() {
+            return {
+                isCollapse: true,//侧栏状态
+                commentPreviewLength: 30,//评论预览长度
+                scrollValue: 0,//滚动距离
+                headerShow: true,//顶部显隐
+                topBtn: false,//回到顶部按钮
+                searchKey: '',//搜索关键词
+                headerHeight: 0,
+                oneText: {
+                    content: '',
+                    origin: {
+                        author: '',
+                        title: ''
+                    }
+                },//每日一言
+            }
+        },
+        watch: {
+            $route(to, from) {
+                if (from.path === '/admin') {
+                    this.$forceUpdate();
+                }
+            },
+            scrollValue(newValue, oldValue) {
+                if (oldValue > newValue) {
+                    //上滚
+                    this.headerShow = true;
+                } else {
+                    //下滚
+                    if (newValue > this.headerHeight) {
+                        this.headerShow = false;
+                    }
+                }
+            },
+        },
+        mounted() {
+            //ie警告
+            if (!!window.ActiveXObject || "ActiveXObject" in window) {
+                this.$alert('您正在使用IE浏览器，可能会遇到兼容性问题', '注意', {
+                    confirmButtonText: '好的',
+                    type: 'error',
+                    center: true
+                });
+            }
+            //调整图片距离
+            let vm = this;
+            this.$util.getDomByClass('header_bg')[0].addEventListener('load', function () {
+                //console.log(vm.$util.getDomByClass('header_bg')[0].height);
+                //修改主体内容的marginTop
+                let value = vm.headerHeight = vm.$util.getDomByClass('header_bg')[0].height > 600 ? 600 : vm.$util.getDomByClass('header_bg')[0].height;
+                vm.$util.getDomByClass('main_item')[0].style.marginTop = (value > 600 ? 600 : value) + 'px';
+            })
+
+            //获取一言
+            const jinrishici = require('jinrishici');
+            jinrishici.load(result => {
+                console.log(result);
+                vm.oneText = result.data;
+            });
+        },
+        methods: {
+            scroll() {
+                //滚动监听
+                //关闭侧栏
+                if (!this.isCollapse) {
+                    this.isCollapse = true;
+                    this.$util.getDomByClass('navBtn')[0].blur();
+                }
+                this.scrollValue = document.documentElement.scrollTop || document.body.scrollTop;
+                this.topBtn = !(this.scrollValue < 100);
+            },
+            closeMenuByClick() {
+                //点击关闭侧栏
+                if (!this.isCollapse) {
+                    this.isCollapse = true;
+                }
+            },
+            onSearch() {
+                this.$router.push({path: '/search', query: {keyWord: this.searchKey}});
+            },
+        },
+        components: {
+            NavBar,
+            aboutMe,
+            blogHeader,
+            blogFooter,
+            ToTop,
+            Category
+        },
+        activated() {
+            //监听滚动
+            window.addEventListener('scroll', this.scroll, false);
+        },
+        beforeRouteLeave(to, from, next) {
+            window.removeEventListener('scroll', this.scroll);
+            this.searchKey = '';
+            next();
         }
-      }
-    },
-  },
-  mounted() {
-    //ie警告
-    if (!!window.ActiveXObject || "ActiveXObject" in window) {
-      this.$alert('您正在使用IE浏览器，可能会遇到兼容性问题', '注意', {
-        confirmButtonText: '好的',
-        type: 'error',
-        center: true
-      });
     }
-  },
-  methods: {
-    scroll() {
-      //滚动监听
-      //关闭侧栏
-      if (!this.isCollapse) {
-        this.isCollapse = true;
-        this.$util.getDomByClass('navBtn')[0].blur();
-      }
-      this.scrollValue = document.documentElement.scrollTop || document.body.scrollTop;
-      this.topBtn = !(this.scrollValue < 100);
-    },
-    closeMenuByClick() {
-      //点击关闭侧栏
-      if (!this.isCollapse) {
-        this.isCollapse = true;
-      }
-    },
-    onSearch() {
-      this.$router.push({path: '/search', query: {keyWord: this.searchKey}});
-    },
-  },
-  components: {
-    NavBar,
-    aboutMe,
-    blogHeader,
-    blogFooter,
-    ToTop,
-    Category
-  },
-  activated() {
-    //监听滚动
-    window.addEventListener('scroll', this.scroll, false);
-  },
-  beforeRouteLeave(to, from, next) {
-    window.removeEventListener('scroll', this.scroll);
-    this.searchKey = '';
-    next();
-  }
-}
 </script>
 
 <style scoped>
@@ -135,26 +174,29 @@ export default {
     }
 
     .main_item {
-        padding-top: 120px;
-        max-width: 1000px;
-        margin: 0 auto;
+        background: white;
+        position: relative;
+        z-index: 999;
+        /*margin-top: 600px;*/
+        /*max-width: 1000px;*/
     }
 
     .el-header {
-        background: white;
         line-height: 60px;
         position: fixed;
         width: 100%;
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.14);
-        transition: top 0.5s;
+        transition: all 0.5s;
+        background: white;
     }
 
     .header-top {
         box-shadow: 0 0 0 0 !important;
+        background: transparent;
     }
 
     .navSearch >>> input {
-        border-radius: 20px;
+
     }
 
     .el-aside {
