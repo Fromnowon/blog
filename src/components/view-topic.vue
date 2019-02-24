@@ -7,10 +7,10 @@
                     {{ topic.title }}
                 </div>
                 <div style="margin-left: auto;display: flex">
-                    <el-button round size="small" style="height: 32px;align-self: center" icon="el-icon-edit"
+                    <el-button size="small" style="height: 32px;align-self: center" icon="el-icon-edit"
                                type="success" @click="postComment">评论
                     </el-button>
-                    <el-button style="color: red;height: 32px;align-self: center;" round @click="go_back" size="small"
+                    <el-button style="color: red;height: 32px;align-self: center;" @click="go_back" size="small"
                                icon="el-icon-arrow-left">返回
                     </el-button>
                 </div>

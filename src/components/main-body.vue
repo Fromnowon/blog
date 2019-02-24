@@ -10,15 +10,19 @@
             <div style="width: 100%" @click="closeMenuByClick">
                 <el-header :style="{ top:headerShow?'0':'-70px'}"
                            style="z-index: 9998"
-                           :class="[ scrollValue<headerHeight?'header-top':'' ] ">
+                           :class="[ scrollValue===0?'header-ontop':'',scrollValue<(headerHeight-70)&&scrollValue>0?'header-top':'' ] ">
                     <div style="max-width: 960px;margin: 0 auto;display: flex">
-                        <el-button style="height: 32px;align-self: center" size="small"
-                                   @click.stop="isCollapse=!isCollapse"
-                                   type="primary"
-                                   class="navBtn">
-                            <i class="fa fa-navicon"></i>
-                            &nbsp;菜单
-                        </el-button>
+                        <div :style="{color:scrollValue<(headerHeight-70)?'white':'grey'}"
+                             style="font-size: 22px;cursor: pointer;"
+                             @click.stop="isCollapse=!isCollapse">
+                            <i class="navBtn fa fa-navicon" style="transition: color .5s"></i>
+                        </div>
+                        <!--<el-button style="height: 32px;align-self: center" size="small"-->
+                        <!--@click.stop="isCollapse=!isCollapse"-->
+                        <!--class="navBtn">-->
+                        <!--<i class="fa fa-navicon"></i>-->
+                        <!--&nbsp;菜单-->
+                        <!--</el-button>-->
                         <el-input size="small" suffix-icon="el-icon-search" placeholder="搜索"
                                   v-model="searchKey"
                                   :maxlength="16"
@@ -29,13 +33,20 @@
                     </div>
                 </el-header>
                 <div style="position: absolute;z-index: 999;color: white;width: 100%;text-align: center"
-                     :style="{top:headerHeight*0.3+'px'}"
-                >
-                    <span style="font-size: 1.5em">{{ oneText.content }}</span>
-                    <i class="fa fa-refresh "></i>
+                     :style="{top:headerHeight*0.4+'px'}">
+                    <span style="font-size: 1.5em;font-weight: bold">
+                        <a target="_blank"
+                           class="bdSearch"
+                           title="点击查询"
+                           :href="'https://www.baidu.com/s?wd='+oneText.content">
+                            {{ oneText.content }}
+                        </a>
+                    </span>
                     <div>
                         <br>
-                        <span>《{{ oneText.origin.title }}》{{ oneText.origin.author }}</span>
+                        <span style="color: #e1e1e1">——《{{ oneText.origin.title }}》 {{ oneText.origin.author }}</span>
+                        &nbsp;
+                        <i class="fa fa-refresh" style="cursor: pointer" @click="jinrishici"></i>
                     </div>
 
                 </div>
@@ -71,6 +82,7 @@
                 topBtn: false,//回到顶部按钮
                 searchKey: '',//搜索关键词
                 headerHeight: 0,
+                t: 0,//下滚累计距离
                 oneText: {
                     content: '',
                     origin: {
@@ -93,7 +105,13 @@
                 } else {
                     //下滚
                     if (newValue > this.headerHeight) {
-                        this.headerShow = false;
+                        if (this.headerShow) {
+                            this.t += newValue - oldValue;//累计滚动距离超过一定值则隐藏顶部
+                        }
+                        if (this.t > 200) {
+                            this.t = 0;
+                            this.headerShow = false;
+                        }
                     }
                 }
             },
@@ -109,21 +127,27 @@
             }
             //调整图片距离
             let vm = this;
+            const maxH = 400;//图片最大高度
             this.$util.getDomByClass('header_bg')[0].addEventListener('load', function () {
                 //console.log(vm.$util.getDomByClass('header_bg')[0].height);
                 //修改主体内容的marginTop
-                let value = vm.headerHeight = vm.$util.getDomByClass('header_bg')[0].height > 600 ? 600 : vm.$util.getDomByClass('header_bg')[0].height;
-                vm.$util.getDomByClass('main_item')[0].style.marginTop = (value > 600 ? 600 : value) + 'px';
+                let value = vm.headerHeight = vm.$util.getDomByClass('header_bg')[0].height > maxH ? maxH : vm.$util.getDomByClass('header_bg')[0].height;
+                vm.$util.getDomByClass('main_item')[0].style.marginTop = (value > maxH ? maxH : value) + 'px';
             })
 
             //获取一言
-            const jinrishici = require('jinrishici');
-            jinrishici.load(result => {
-                console.log(result);
-                vm.oneText = result.data;
-            });
+            this.jinrishici();
         },
         methods: {
+            jinrishici() {
+                let vm = this;
+                //获取一言
+                const jinrishici = require('jinrishici');
+                jinrishici.load(result => {
+                    // console.log(result);
+                    vm.oneText = result.data;
+                });
+            },
             scroll() {
                 //滚动监听
                 //关闭侧栏
@@ -187,16 +211,42 @@
         width: 100%;
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.14);
         transition: all 0.5s;
-        background: white;
+        background: #fcfcfc;
+    }
+
+    .header-ontop {
+        background: transparent;
+        box-shadow: 0 0 0 0 !important;
     }
 
     .header-top {
         box-shadow: 0 0 0 0 !important;
-        background: transparent;
+        background: rgba(255, 255, 255, 0.4);
+    }
+
+    .navBtn:hover {
+        color: #3a8ee6;
     }
 
     .navSearch >>> input {
+        border-radius: 20px;
+        border: 2px solid lightgrey;
+    }
 
+    .navSearch >>> input:focus {
+        border: 2px solid #3a8ee6;
+    }
+
+    .bdSearch {
+        background: linear-gradient(to right, #ff5500, #ffff00);
+        -webkit-background-clip: text;
+        color: transparent;
+        text-decoration: none;
+        transition: color .5s;
+    }
+
+    .bdSearch:hover {
+        color: #3a8ee6;
     }
 
     .el-aside {
