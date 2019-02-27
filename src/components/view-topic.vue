@@ -1,5 +1,11 @@
 <template>
     <div class="topic_content" style="background: white">
+        <div v-show="dialogVisible"
+             style="position: fixed;width: 100%;height: 100%;background: rgba(0,0,0,0.51);z-index: 9999"
+             @click="dialogVisible=0">
+            <img :src="dialogImg" alt="pic"
+                 style="position: fixed;top: 0;right: 0;left: 0;bottom: 0;margin: auto;width: 70%">
+        </div>
         <div :class="['header',isTitleVisible?'header-visible':'header-invisible',scrollValue===0?'header-top':'']">
             <div class="inner_item" style="display: flex;">
                 <div style="font-size: 24px;font-weight: bold;margin-right: 20px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;"
@@ -131,398 +137,398 @@
             </div>
         </div>
         <ToTop></ToTop>
-        <el-dialog
-                :visible.sync="dialogVisible"
-                width="80%">
-            <div style="text-align: center;margin-bottom: 20px">
-                <img :src="dialogImg" style="width: 90%;" />
-            </div>
-        </el-dialog>
+        <!--<el-dialog-->
+        <!--:visible.sync="dialogVisible"-->
+        <!--width="80%">-->
+        <!--<div style="text-align: center;margin-bottom: 20px">-->
+        <!--<img :src="dialogImg" style="width: 90%;"/>-->
+        <!--</div>-->
+        <!--</el-dialog>-->
     </div>
 </template>
 
 <script>
-import {quillEditor, Quill} from "vue-quill-editor"; //调用编辑器
-import 'quill/dist/quill.core.css';
-import 'quill/dist/quill.snow.css';
-import 'quill/dist/quill.bubble.css';
-import ImageResize from '../../static/js/quill-image-resize-module'
-import Qs from 'qs'
-import divider from './other/divider'
-import ToTop from "./other/toTop";
+    import {quillEditor, Quill} from "vue-quill-editor"; //调用编辑器
+    import 'quill/dist/quill.core.css';
+    import 'quill/dist/quill.snow.css';
+    import 'quill/dist/quill.bubble.css';
+    import ImageResize from '../../static/js/quill-image-resize-module'
+    import Qs from 'qs'
+    import divider from './other/divider'
+    import ToTop from "./other/toTop";
 
-Quill.register('modules/imageResize', ImageResize);
-export default {
-  name: "view-topic",
-  data() {
-    return {
-      postLoading: false,//按钮提交加载状态
-      comments: [],//评论
-      commentsToShow: [],//分页内容
-      perNUM: 10,//分页条数
-      commentsTotal: 0,//评论数
-      commentsPageNUM: 1,//默认第一页
-      uuid: '',//唯一标识符
-      validateStatus: false,//验证状态
-      loadingComment: true,//加载中
-      loadingTopic: true,
-      isTitleVisible: true,//标题是否可见
-      scrollValue: 0,//滚动距离
-      maxLength: 800,//评论最大长度
-      isFull: false,//编辑器长度状态
-      lauded: false,//是否赞过
-      hasCache: '',//是否存在路由历史
-      dialogVisible: false,//图片对话框
-      dialogImg: '',
-      imgScaleValue: 0,//图片放大
-      group: {0: '默认', 1: '开发', 2: '分享', 3: '随笔', 4: '其他'},
-      form: {
-        name: '',
-        email: '',
-      },
-      rules: {
-        name: [
-          {required: true, message: '请输入昵称', trigger: 'blur'},
-          {min: 3, max: 8, message: '长度在 3 到 5 个字符', trigger: 'blur'}
-        ],
-        email: [
-          {required: true, message: '请输入邮箱地址', trigger: 'blur'},
-          {type: 'email', message: '请输入正确的邮箱地址', trigger: ['blur', 'change']}
-        ],
+    Quill.register('modules/imageResize', ImageResize);
+    export default {
+        name: "view-topic",
+        data() {
+            return {
+                postLoading: false,//按钮提交加载状态
+                comments: [],//评论
+                commentsToShow: [],//分页内容
+                perNUM: 10,//分页条数
+                commentsTotal: 0,//评论数
+                commentsPageNUM: 1,//默认第一页
+                uuid: '',//唯一标识符
+                validateStatus: false,//验证状态
+                loadingComment: true,//加载中
+                loadingTopic: true,
+                isTitleVisible: true,//标题是否可见
+                scrollValue: 0,//滚动距离
+                maxLength: 800,//评论最大长度
+                isFull: false,//编辑器长度状态
+                lauded: false,//是否赞过
+                hasCache: '',//是否存在路由历史
+                dialogVisible: false,//图片对话框
+                dialogImg: '',
+                imgScaleValue: 0,//图片放大
+                group: {0: '默认', 1: '开发', 2: '分享', 3: '随笔', 4: '其他'},
+                form: {
+                    name: '',
+                    email: '',
+                },
+                rules: {
+                    name: [
+                        {required: true, message: '请输入昵称', trigger: 'blur'},
+                        {min: 3, max: 8, message: '长度在 3 到 5 个字符', trigger: 'blur'}
+                    ],
+                    email: [
+                        {required: true, message: '请输入邮箱地址', trigger: 'blur'},
+                        {type: 'email', message: '请输入正确的邮箱地址', trigger: ['blur', 'change']}
+                    ],
 
-      },
-      tag_style_arr: ['', 'success', 'info', 'warning', 'danger'],
-      topic: '',
-      content: ``,//编辑器内容，html格式
-      content_text: ``,//编辑器内容，html格式
-      editorOption: {
-        placeholder: '发言请遵守相关法律法规',
-        modules: {
-          toolbar: {
-            container: [
-              'bold', 'strike',
-              {'background': []}, {'color': []},
-              'blockquote', 'code-block',
-              'clean', 'link'
-            ],
-            handlers: {
-              'image': (value) => {
-                if (value) {
-                  document.querySelector('.image_uploader input').click()
-                } else {
-                  console.log('error');
-                }
-              }
-            },
-          },
-          imageResize: {
-            displayStyles: {
-              backgroundColor: 'black',
-              border: 'none',
-              color: 'white'
-            },
-            modules: ['Resize', 'DisplaySize', 'Toolbar']
-          },
-        }
-      },
-    }
-  },
-  methods: {
-    imgClick($event) {
-      if ($event.target.tagName.toUpperCase() === 'IMG') {
-        // 点击了图片
-        this.dialogVisible = true;
-        this.dialogImg = $event.target.src;
-      }
-    },
-    laud() {
-      //赞
-      if (this.lauded) {
-        return;
-      }
-      this.lauded = true;
-      this.$set(this.topic, 'laud', parseInt(this.topic.laud) + 1);
-      this.$axios(this.API + '/backend.php?action=laudHandler&id=' + this.$route.query.id);
-    },
-    postComment() {
-      let obj = this.$util.getDomByClass('postComment')[0];
-      window.scrollTo(0, obj.offsetTop + obj.offsetHeight);
-    },
-    scrollTopic() {
-      //滚动监听
-      let title = this.$util.getDomByClass('title')[0];
-      this.scrollValue = document.documentElement.scrollTop || document.body.scrollTop;
-      this.isTitleVisible = !(title.offsetTop + title.offsetHeight - this.scrollValue - 60 < 0);
-    },
-    validate() {
-      let nc_token = ["CF_APP_1", (new Date()).getTime(), Math.random()].join(':');
-      let nc = NoCaptcha.init({
-        renderTo: '#nc',
-        appkey: 'CF_APP_1',
-        scene: 'register',
-        token: nc_token,
-        trans: {"key1": "code0"},
-        elementID: ["usernameID"],
-        is_Opt: 0,
-        language: "cn",
-        timeout: 10000,
-        retryTimes: 5,
-        errorTimes: 5,
-        inline: false,
-        apimap: {
-          // 'analyze': '//a.com/nocaptcha/analyze.jsonp',
-          // 'uab_Url': '//aeu.alicdn.com/js/uac/909.js',
-        },
-        bannerHidden: false,
-        initHidden: false,
-        callback: function (data) {
-          // window.console && console.log(nc_token)
-          // window.console && console.log(data.csessionid)
-          // window.console && console.log(data.sig)
-        },
-        error: function (s) {
-        }
-      });
-      NoCaptcha.setEnabled(true);
-      nc.reset();//请务必确保这里调用一次reset()方法
-      NoCaptcha.upLang('cn', {
-        'LOADING': "加载中...",//加载
-        'SLIDER_LABEL': "向右滑动验证",//等待滑动
-        'CHECK_Y': "验证通过",//通过
-        'ERROR_TITLE': "非常抱歉，这出错了...",//拦截
-        'CHECK_N': "验证未通过", //准备唤醒二次验证
-        'OVERLAY_INFORM': "经检测你当前操作环境存在风险，请输入验证码",//二次验证
-        'TIPS_TITLE': "验证码错误，请重新输入"//验证码输错时的提示
-      });
-      NoCaptcha.on('success', () => {
-        this.validateStatus = true;
-        //console.log('验证通过')
-      })
-    },
-    paginationHandler(pageNUM) {
-      //console.log(pageNUM);
-      this.commentsPageNUM = pageNUM;
-      this.commentsToShow = [];
-      //注意可能越界
-      for (let i = (pageNUM - 1) * this.perNUM; i < this.perNUM * pageNUM && i < this.commentsTotal; i++) {
-        this.commentsToShow.push(this.comments[i]);
-      }
-    },
-    post(form) {
-      this.$refs[form].validate((valid) => {
-        if (valid) {
-          //校验时间戳
-          if (this.$store.state.userInfo !== null) {
-            //此用户存存在发言记录
-            let time = new Date().getTime() / 1000 - this.$store.state.userInfo.time / 1000;
-            console.log('间隔秒数：' + Math.floor(time));
-            if (time < 180) {
-              this.$message.error('距离上次发言不足3分钟，请等待');
-              return;
+                },
+                tag_style_arr: ['', 'success', 'info', 'warning', 'danger'],
+                topic: '',
+                content: ``,//编辑器内容，html格式
+                content_text: ``,//编辑器内容，html格式
+                editorOption: {
+                    placeholder: '发言请遵守相关法律法规',
+                    modules: {
+                        toolbar: {
+                            container: [
+                                'bold', 'strike',
+                                {'background': []}, {'color': []},
+                                'blockquote', 'code-block',
+                                'clean', 'link'
+                            ],
+                            handlers: {
+                                'image': (value) => {
+                                    if (value) {
+                                        document.querySelector('.image_uploader input').click()
+                                    } else {
+                                        console.log('error');
+                                    }
+                                }
+                            },
+                        },
+                        imageResize: {
+                            displayStyles: {
+                                backgroundColor: 'black',
+                                border: 'none',
+                                color: 'white'
+                            },
+                            modules: ['Resize', 'DisplaySize', 'Toolbar']
+                        },
+                    }
+                },
             }
-          }
-
-          if (!this.content_text.match(/^\s*$/)) {
-            if (!this.content_text.length > this.maxLength) {
-              this.$message.error('内容过长，请删减');
-            }
-            //改变按钮样式
-            this.postLoading = true;
-            //提交
-            let param = {
-              topicID: this.$route.query.id,
-              name: this.form.name,
-              email: this.form.email,
-              content: this.content,
-              captcha: this.captchaInput,
-            };
-            this.$axios.post(this.API + '/backend.php?action=postComment', Qs.stringify(param))
-              .then(data => {
-                this.postLoading = false;
-                switch (data.data.status) {
-                  case 0: {
-                    //触发审核
-                    this.$alert('该评论经审核后显示', '提示', {
-                      confirmButtonText: '知道了',
-                      type: 'warning',
-                      center: true
-                    });
-                    break;
-                  }
-                  case 1: {
-                    this.$notify.success({
-                      title: '成功',
-                      message: '你发表了评论',
-                    });
-                    //拉取评论
-                    this.pullComments();
-                    setTimeout(() => {
-                      //定位到评论
-                      //animateScroll(this.$util.getDomByClass('comment-title')[0], 64, -60);
-                      let obj = this.$util.getDomByClass('comment-title')[0];
-                      window.scrollTo(0, obj.offsetTop - obj.offsetHeight - 60);
-                    }, 1000);
-                    break;
-                  }
-                  default: {
-                    //其他错误
-                    console.log(data);
-                  }
+        },
+        methods: {
+            imgClick($event) {
+                if ($event.target.tagName.toUpperCase() === 'IMG') {
+                    // 点击了图片
+                    this.dialogVisible = true;
+                    this.dialogImg = $event.target.src;
                 }
-                //初始化编辑内容，并记录用户相关信息
-                this.$refs[form].clearValidate();
-                this.content = '';
-                NoCaptcha.reset();
-                this.validateStatus = false;
-                this.$store.commit('setUserInfo', {
-                  name: param.name,
-                  email: param.email,
-                  time: new Date().getTime()
+            },
+            laud() {
+                //赞
+                if (this.lauded) {
+                    return;
+                }
+                this.lauded = true;
+                this.$set(this.topic, 'laud', parseInt(this.topic.laud) + 1);
+                this.$axios(this.API + '/backend.php?action=laudHandler&id=' + this.$route.query.id);
+            },
+            postComment() {
+                let obj = this.$util.getDomByClass('postComment')[0];
+                window.scrollTo(0, obj.offsetTop + obj.offsetHeight);
+            },
+            scrollTopic() {
+                //滚动监听
+                let title = this.$util.getDomByClass('title')[0];
+                this.scrollValue = document.documentElement.scrollTop || document.body.scrollTop;
+                this.isTitleVisible = !(title.offsetTop + title.offsetHeight - this.scrollValue - 60 < 0);
+            },
+            validate() {
+                let nc_token = ["CF_APP_1", (new Date()).getTime(), Math.random()].join(':');
+                let nc = NoCaptcha.init({
+                    renderTo: '#nc',
+                    appkey: 'CF_APP_1',
+                    scene: 'register',
+                    token: nc_token,
+                    trans: {"key1": "code0"},
+                    elementID: ["usernameID"],
+                    is_Opt: 0,
+                    language: "cn",
+                    timeout: 10000,
+                    retryTimes: 5,
+                    errorTimes: 5,
+                    inline: false,
+                    apimap: {
+                        // 'analyze': '//a.com/nocaptcha/analyze.jsonp',
+                        // 'uab_Url': '//aeu.alicdn.com/js/uac/909.js',
+                    },
+                    bannerHidden: false,
+                    initHidden: false,
+                    callback: function (data) {
+                        // window.console && console.log(nc_token)
+                        // window.console && console.log(data.csessionid)
+                        // window.console && console.log(data.sig)
+                    },
+                    error: function (s) {
+                    }
                 });
-              })
-              .catch(error => {
-                this.postLoading = false;
-                console.log(error);
-              })
-          } else {
-            this.$notify.error({
-              title: '错误',
-              message: '评论内容不能为空',
-            });
-          }
+                NoCaptcha.setEnabled(true);
+                nc.reset();//请务必确保这里调用一次reset()方法
+                NoCaptcha.upLang('cn', {
+                    'LOADING': "加载中...",//加载
+                    'SLIDER_LABEL': "向右滑动验证",//等待滑动
+                    'CHECK_Y': "验证通过",//通过
+                    'ERROR_TITLE': "非常抱歉，这出错了...",//拦截
+                    'CHECK_N': "验证未通过", //准备唤醒二次验证
+                    'OVERLAY_INFORM': "经检测你当前操作环境存在风险，请输入验证码",//二次验证
+                    'TIPS_TITLE': "验证码错误，请重新输入"//验证码输错时的提示
+                });
+                NoCaptcha.on('success', () => {
+                    this.validateStatus = true;
+                    //console.log('验证通过')
+                })
+            },
+            paginationHandler(pageNUM) {
+                //console.log(pageNUM);
+                this.commentsPageNUM = pageNUM;
+                this.commentsToShow = [];
+                //注意可能越界
+                for (let i = (pageNUM - 1) * this.perNUM; i < this.perNUM * pageNUM && i < this.commentsTotal; i++) {
+                    this.commentsToShow.push(this.comments[i]);
+                }
+            },
+            post(form) {
+                this.$refs[form].validate((valid) => {
+                    if (valid) {
+                        //校验时间戳
+                        if (this.$store.state.userInfo !== null) {
+                            //此用户存存在发言记录
+                            let time = new Date().getTime() / 1000 - this.$store.state.userInfo.time / 1000;
+                            console.log('间隔秒数：' + Math.floor(time));
+                            if (time < 180) {
+                                this.$message.error('距离上次发言不足3分钟，请等待');
+                                return;
+                            }
+                        }
 
-        } else {
-          return false;
-        }
-      });
-    },
-    go_back() {
-      //若无缓存，则直接进入主页
-      if (this.hasCache) {
-        this.$router.go(-1);
-      } else {
-        this.$router.push('/index');
-      }
-    },
-    onEditorChange({quill, html, text}) {
-      this.content_text = text;
-      //丢弃溢出字符串，并增加提示
-      this.isFull = text.length >= this.maxLength;
-      quill.deleteText(this.maxLength, 1, html);
-    }, // 内容改变事件
-    pullComments() {
-      this.comments = this.commentsToShow = [];
-      this.$axios(this.API + '/backend.php?action=pullComments', {
-        params: {
-          id: this.$route.query.id
-        }
-      })
-        .then(data => {
-          if (data.data.status !== -1) {
-            this.commentsTotal = data.data.msg.length;
-            this.comments = data.data.msg;
-            for (let i = 0; i < this.perNUM && i < this.commentsTotal; i++) {
-              this.commentsToShow.push(this.comments[i]);
+                        if (!this.content_text.match(/^\s*$/)) {
+                            if (!this.content_text.length > this.maxLength) {
+                                this.$message.error('内容过长，请删减');
+                            }
+                            //改变按钮样式
+                            this.postLoading = true;
+                            //提交
+                            let param = {
+                                topicID: this.$route.query.id,
+                                name: this.form.name,
+                                email: this.form.email,
+                                content: this.content,
+                                captcha: this.captchaInput,
+                            };
+                            this.$axios.post(this.API + '/backend.php?action=postComment', Qs.stringify(param))
+                                .then(data => {
+                                    this.postLoading = false;
+                                    switch (data.data.status) {
+                                        case 0: {
+                                            //触发审核
+                                            this.$alert('该评论经审核后显示', '提示', {
+                                                confirmButtonText: '知道了',
+                                                type: 'warning',
+                                                center: true
+                                            });
+                                            break;
+                                        }
+                                        case 1: {
+                                            this.$notify.success({
+                                                title: '成功',
+                                                message: '你发表了评论',
+                                            });
+                                            //拉取评论
+                                            this.pullComments();
+                                            setTimeout(() => {
+                                                //定位到评论
+                                                //animateScroll(this.$util.getDomByClass('comment-title')[0], 64, -60);
+                                                let obj = this.$util.getDomByClass('comment-title')[0];
+                                                window.scrollTo(0, obj.offsetTop - obj.offsetHeight - 60);
+                                            }, 1000);
+                                            break;
+                                        }
+                                        default: {
+                                            //其他错误
+                                            console.log(data);
+                                        }
+                                    }
+                                    //初始化编辑内容，并记录用户相关信息
+                                    this.$refs[form].clearValidate();
+                                    this.content = '';
+                                    NoCaptcha.reset();
+                                    this.validateStatus = false;
+                                    this.$store.commit('setUserInfo', {
+                                        name: param.name,
+                                        email: param.email,
+                                        time: new Date().getTime()
+                                    });
+                                })
+                                .catch(error => {
+                                    this.postLoading = false;
+                                    console.log(error);
+                                })
+                        } else {
+                            this.$notify.error({
+                                title: '错误',
+                                message: '评论内容不能为空',
+                            });
+                        }
+
+                    } else {
+                        return false;
+                    }
+                });
+            },
+            go_back() {
+                //若无缓存，则直接进入主页
+                if (this.hasCache) {
+                    this.$router.go(-1);
+                } else {
+                    this.$router.push('/index');
+                }
+            },
+            onEditorChange({quill, html, text}) {
+                this.content_text = text;
+                //丢弃溢出字符串，并增加提示
+                this.isFull = text.length >= this.maxLength;
+                quill.deleteText(this.maxLength, 1, html);
+            }, // 内容改变事件
+            pullComments() {
+                this.comments = this.commentsToShow = [];
+                this.$axios(this.API + '/backend.php?action=pullComments', {
+                    params: {
+                        id: this.$route.query.id
+                    }
+                })
+                    .then(data => {
+                        if (data.data.status !== -1) {
+                            this.commentsTotal = data.data.msg.length;
+                            this.comments = data.data.msg;
+                            for (let i = 0; i < this.perNUM && i < this.commentsTotal; i++) {
+                                this.commentsToShow.push(this.comments[i]);
+                            }
+                            this.$nextTick(function () {
+                                /*DOM更新了*/
+                                this.loadingComment = false;
+                            })
+                        } else {
+                            this.loadingComment = false;
+                            //console.log(data);
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
             }
-            this.$nextTick(function () {
-              /*DOM更新了*/
-              this.loadingComment = false;
+        },
+        created() {
+            //生成随机串
+            // this.uuid = randomWord(false, 16);
+            //若使用mounted，控制台会报错，因为data已经被使用，但值为null
+
+
+            //拉取文章数据
+            this.$axios(this.API + '/backend.php?action=get_topic_detail', {
+                params: {
+                    id: this.$route.query.id
+                }
             })
-          } else {
-            this.loadingComment = false;
-            //console.log(data);
-          }
-        })
-        .catch(error => {
-          console.log(error);
-        });
-    }
-  },
-  created() {
-    //生成随机串
-    // this.uuid = randomWord(false, 16);
-    //若使用mounted，控制台会报错，因为data已经被使用，但值为null
-
-
-    //拉取文章数据
-    this.$axios(this.API + '/backend.php?action=get_topic_detail', {
-      params: {
-        id: this.$route.query.id
-      }
-    })
-      .then(data => {
-        data.data.msg.tags = JSON.parse(data.data.msg.tags);
-        if (data.data.status !== -1) {
-          this.topic = data.data.msg;
-        } else {
-          console.log(data);
+                .then(data => {
+                    data.data.msg.tags = JSON.parse(data.data.msg.tags);
+                    if (data.data.status !== -1) {
+                        this.topic = data.data.msg;
+                    } else {
+                        console.log(data);
+                    }
+                    this.$nextTick(function () {
+                        /*DOM更新了*/
+                        this.loadingTopic = false;
+                    })
+                })
+                .catch(error => {
+                    console.log(error);
+                });
+            //拉取评论
+            this.pullComments();
+        },
+        mounted() {
+            if (this.$store.state.userInfo !== null) {
+                //读取用户信息
+                this.$set(this.form, 'name', this.$store.state.userInfo.name);
+                this.$set(this.form, 'email', this.$store.state.userInfo.email);
+                this.$nextTick(() => {
+                    this.$refs['form'].clearValidate();
+                });
+            }
+            let vm = this;
+            vm.editor.container.style.height = '200px';
+            //启用验证
+            this.validate();
+            setTimeout(() => {
+                //监听滚动，修正路由调整滚动条不触发滚动监听的bug
+                window.addEventListener('scroll', this.scrollTopic, false);
+            }, 0)
+        },
+        computed: {
+            editor() {
+                return this.$refs.myQuillEditor.quill;
+            },
+        },
+        beforeRouteEnter(to, from, next) {
+            next(vm => {
+                vm.hasCache = from.path !== '/';
+            });
+        },
+        beforeRouteLeave(to, from, next) {
+            window.removeEventListener('scroll', this.scrollTopic);
+            next();
+        },
+        components: {
+            quillEditor,
+            divider,
+            ToTop
         }
-        this.$nextTick(function () {
-          /*DOM更新了*/
-          this.loadingTopic = false;
-        })
-      })
-      .catch(error => {
-        console.log(error);
-      });
-    //拉取评论
-    this.pullComments();
-  },
-  mounted() {
-    if (this.$store.state.userInfo !== null) {
-      //读取用户信息
-      this.$set(this.form, 'name', this.$store.state.userInfo.name);
-      this.$set(this.form, 'email', this.$store.state.userInfo.email);
-      this.$nextTick(() => {
-        this.$refs['form'].clearValidate();
-      });
     }
-    let vm = this;
-    vm.editor.container.style.height = '200px';
-    //启用验证
-    this.validate();
-    setTimeout(() => {
-      //监听滚动，修正路由调整滚动条不触发滚动监听的bug
-      window.addEventListener('scroll', this.scrollTopic, false);
-    }, 0)
-  },
-  computed: {
-    editor() {
-      return this.$refs.myQuillEditor.quill;
-    },
-  },
-  beforeRouteEnter(to, from, next) {
-    next(vm => {
-      vm.hasCache = from.path !== '/';
-    });
-  },
-  beforeRouteLeave(to, from, next) {
-    window.removeEventListener('scroll', this.scrollTopic);
-    next();
-  },
-  components: {
-    quillEditor,
-    divider,
-    ToTop
-  }
-}
 
-//生成随机uuid
-function randomWord(randomFlag, min, max) {
-  let str = "",
-    range = min,
-    arr = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+    //生成随机uuid
+    function randomWord(randomFlag, min, max) {
+        let str = "",
+            range = min,
+            arr = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 
-  // 随机产生
-  if (randomFlag) {
-    range = Math.round(Math.random() * (max - min)) + min;
-  }
-  for (var i = 0; i < range; i++) {
-    let pos = Math.round(Math.random() * (arr.length - 1));
-    str += arr[pos];
-  }
-  return str;
-}
+        // 随机产生
+        if (randomFlag) {
+            range = Math.round(Math.random() * (max - min)) + min;
+        }
+        for (var i = 0; i < range; i++) {
+            let pos = Math.round(Math.random() * (arr.length - 1));
+            str += arr[pos];
+        }
+        return str;
+    }
 
 </script>
 

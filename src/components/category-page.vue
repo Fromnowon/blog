@@ -94,5 +94,8 @@ export default {
 </script>
 
 <style scoped>
-
+.content{
+    max-width: 1000px;
+    margin: 0 auto;
+}
 </style>

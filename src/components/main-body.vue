@@ -15,7 +15,7 @@
                         <div :style="{color:scrollValue<(headerHeight-70)?'white':'grey'}"
                              style="font-size: 22px;cursor: pointer;"
                              @click.stop="isCollapse=!isCollapse">
-                            <i class="navBtn fa fa-navicon" style="transition: color .5s"></i>
+                            <i class="navBtn fa fa-navicon" style="transition: color .5s;"></i>
                         </div>
                         <!--<el-button style="height: 32px;align-self: center" size="small"-->
                         <!--@click.stop="isCollapse=!isCollapse"-->
