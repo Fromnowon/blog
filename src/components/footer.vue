@@ -7,7 +7,7 @@
              @click="dialogVisible=!dialogVisible">
         <div class="content">
             <p style="font-size: 14px;">
-                Copyright © 2017-2019 By Zhaozihang.net All Rights Reserved.
+                Copyright © 2018-2019 By Zhaozihang All Rights Reserved.
             </p>
             <div style="display: flex;justify-items: center;justify-content: center">
                 <a href="https://github.com/Fromnowon" target="_blank">

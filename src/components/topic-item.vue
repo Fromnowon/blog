@@ -21,15 +21,6 @@
                     <router-link :to="'view?id='+item.id" class="topic_preview"
                                  v-text="item.content_preview"></router-link>
                 </div>
-                <div style="text-align: center;margin-bottom: 40px">
-                    <!--<button-->
-                    <!--class="view_detail_btn"-->
-                    <!--@click="viewTopic('view?id='+item.id)">阅读全文-->
-                    <!--</button>-->
-                    <el-button type="text" @click="viewTopic('view?id='+item.id)">
-                        阅读全文
-                    </el-button>
-                </div>
             </div>
         </transition-group>
         <div>

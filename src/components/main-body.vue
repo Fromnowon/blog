@@ -51,7 +51,7 @@
 
                 </div>
                 <div style="position: fixed;top: 0;width: 100%;z-index: 998">
-                    <img src="../../static/images/header.jpg" class="header_bg" alt="bg" style="width: 100%;">
+                    <img :src="src" class="header_bg" alt="bg" style="width: 100%;">
                 </div>
                 <el-main class="main_item">
                     <router-view style="min-height: 640px"></router-view>
@@ -64,6 +64,7 @@
 </template>
 
 <script>
+
     import aboutMe from './about-me'
     import blogHeader from './login'
     import blogFooter from './footer'
@@ -75,6 +76,7 @@
         name: "main_body",
         data() {
             return {
+                src: '../../static/images/header/header1.jpg',//顶部背景
                 isCollapse: true,//侧栏状态
                 commentPreviewLength: 30,//评论预览长度
                 scrollValue: 0,//滚动距离
@@ -84,10 +86,10 @@
                 headerHeight: 0,
                 t: 0,//下滚累计距离
                 oneText: {
-                    content: '',
+                    content: 'null',
                     origin: {
-                        author: '',
-                        title: ''
+                        author: 'null',
+                        title: 'null'
                     }
                 },//每日一言
             }
@@ -117,6 +119,9 @@
             },
         },
         mounted() {
+            //随机背景
+            this.src = '../../static/images/header/header' + Math.floor(Math.random() * 5 + 1) + '.jpg';
+
             //ie警告
             if (!!window.ActiveXObject || "ActiveXObject" in window) {
                 this.$alert('您正在使用IE浏览器，可能会遇到兼容性问题', '注意', {
@@ -254,7 +259,7 @@
         background: #545c64;
         color: #333;
         text-align: center;
-        line-height: 200px;
+        /*line-height: 200px;*/
     }
 
     .aside-menu {

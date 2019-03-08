@@ -593,6 +593,14 @@
         cursor: pointer;
     }
 
+    .content >>> pre {
+        background-color: rgba(211, 211, 211, 0.51) !important;
+        border-radius: 0 !important;
+        color: rgba(0, 0, 0, 0.71) !important;
+        border-left: 3px solid gray;
+        font-family: Helvetica, Arial, sans-serif;
+    }
+
     .ql-container {
         padding: 10px 0;
         font-size: 14px;

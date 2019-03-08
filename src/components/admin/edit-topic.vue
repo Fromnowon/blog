@@ -91,6 +91,9 @@
         <div class="submit_div">
             <el-button type="primary" @click="post_topic" style="width: 120px">{{ mode===0?'发布':'修改' }}</el-button>
         </div>
+      <!--<div>-->
+        <!--<editor api-key="kvgsogr9t3851j88fd194yaggsnma9oxx0v8hhhsv8jnrozi" :init="{plugins: 'wordcount'}"></editor>-->
+      <!--</div>-->
     </div>
 </template>
 
@@ -101,6 +104,7 @@ import 'quill/dist/quill.snow.css';
 import 'quill/dist/quill.bubble.css';
 import ImageResize from '../../../static/js/quill-image-resize-module'
 import Qs from 'qs'
+// import Editor from '@tinymce/tinymce-vue';
 
 Quill.register('modules/imageResize', ImageResize);
 
@@ -333,7 +337,8 @@ export default {
     this.getData();
   },
   components: {
-    quillEditor
+    quillEditor,
+    // Editor
   }
 }
 </script>
